@@ -7,37 +7,39 @@
 
 NAME	=	lemipc
 
-CC			=	gcc
+CC		=	gcc
 CFLAGS	=	-Wall -Wextra -Werror
 
 BUILD_DIR	=	build
 OBJS_DIR	=	$(BUILD_DIR)/objects
 
-SRCS			=	$(addprefix parser/, $(PARSER_SRCS)) $(addprefix src/, $(MAIN_SRCS))
+SRCS		=	$(addprefix parser/, $(PARSER_SRCS)) $(addprefix src/, $(MAIN_SRCS))
 OBJS_PATH	=	$(patsubst %.c,$(OBJS_DIR)/%.o,$(SRCS))
 
 LIBFT_NAME			=	$(BUILD_DIR)/libft.a
-LIBFT_DIR				=	libft
+LIBFT_DIR			=	libft
 LIBFT_SRCS			=	$(addprefix $(LIBFT_DIR)/, $(_LIBFT_SRCS))
-LIBFT_OBJS_PATH	=	$(patsubst $(LIBFT_DIR)/%.c,$(OBJS_DIR)/$(LIBFT_DIR)/%.o,$(LIBFT_SRCS))
+LIBFT_OBJS_PATH		=	$(patsubst $(LIBFT_DIR)/%.c,$(OBJS_DIR)/$(LIBFT_DIR)/%.o,$(LIBFT_SRCS))
 
-PRINTF_NAME				=	$(BUILD_DIR)/libftprintf.a
-PRINTF_DIR				=	ft_printf
-PRINTF_SRCS				=	$(addprefix $(PRINTF_DIR)/, $(_PRINTF_SRCS))
+PRINTF_NAME			=	$(BUILD_DIR)/libftprintf.a
+PRINTF_DIR			=	ft_printf
+PRINTF_SRCS			=	$(addprefix $(PRINTF_DIR)/, $(_PRINTF_SRCS))
 PRINTF_OBJS_PATH	=	$(patsubst $(PRINTF_DIR)/%.c,$(OBJS_DIR)/$(PRINTF_DIR)/%.o,$(PRINTF_SRCS))
+
+PARSER_DIR	=	parser
 
 RED			=	\033[1;31m
 GREEN		=	\033[1;32m
-YELLOW	=	\033[1;33m
+YELLOW		=	\033[1;33m
 BLUE		=	\033[1;34m
 CYAN		=	\033[1;36m
 RESET		=	\033[0m
 UP			=	\033[A
 CUT			=	\033[K
 
-TOTAL_FILES_LIBFT		=	$(words $(LIBFT_SRCS))
+TOTAL_FILES_LIBFT	=	$(words $(LIBFT_SRCS))
 TOTAL_FILES_PRINTF	=	$(words $(PRINTF_SRCS))
-TOTAL_FILES					=	$(words $(SRCS))
+TOTAL_FILES			=	$(words $(SRCS))
 
 $(OBJS_DIR)/$(LIBFT_DIR)/%.o: $(LIBFT_DIR)/%.c
 	@mkdir -p $(@D)
@@ -46,7 +48,7 @@ $(OBJS_DIR)/$(LIBFT_DIR)/%.o: $(LIBFT_DIR)/%.c
 	echo $$COUNT > .count1; \
 	PERCENT=$$(($$COUNT * 100 / $(TOTAL_FILES_LIBFT))); \
 	printf "$(CUT)$(RESET)[$(YELLOW)%3d%%$(RESET)] 🎖️ Training Stormtroopers:$(RESET) %s\n" $$PERCENT $(notdir $<)
-	@$(CC) $(CFLAGS) -I $(LIBFT_DIR)/includes -c $< -o $@
+	@$(CC) $(CFLAGS) -I $(LIBFT_DIR) -c $< -o $@
 	@printf "$(UP)"
 
 $(LIBFT_NAME): $(LIBFT_OBJS_PATH)
@@ -80,9 +82,8 @@ $(OBJS_DIR)/%.o: %.c
 	echo $$COUNT > .count3; \
 	PERCENT=$$(($$COUNT * 100 / $(TOTAL_FILES))); \
 	printf "$(CUT)$(RESET)[$(YELLOW)%3d%%$(RESET)] 🏗️ Constructing Death Star: %s\n" $$PERCENT $(notdir $<)
-	@$(CC) $(CFLAGS) -I . -c $< -o $@
+	@$(CC) $(CFLAGS) -I include -I $(LIBFT_DIR) -I $(PARSER_DIR) -c $< -o $@
 	@printf "$(UP)"
-
 
 $(NAME): $(LIBFT_NAME) $(PRINTF_NAME) $(OBJS_PATH)
 	@printf "$(RESET)[$(GREEN)DONE$(RESET)] 🌩️ $(CYAN)Commence primary ignition!$(RESET)$(CUT)\n"
