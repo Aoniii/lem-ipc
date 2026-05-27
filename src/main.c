@@ -14,8 +14,8 @@ int main(int argc, char** argv) {
     };
 
     t_data  data = {
-        .map_size = 10,
-        .ai = 1,
+        .map_size = DEFAULT_MAP_SIZE,
+        .ai = DEFAULT_AI_LEVEL,
         .spectator = false,
         .walls = false,
         .replay = false,
