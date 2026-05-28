@@ -35,12 +35,15 @@ t_validate  validate_team(char **args) {
     if (args == NULL || args[0] == NULL)
         return (V_MISSING_TEAM);
 
-    char    *value = args[0];
-    char    *endptr = NULL;
-	strtoul(value, &endptr, 10);
+    char            *value = args[0];
+    char            *endptr = NULL;
+	unsigned int    result = strtoul(value, &endptr, 10);
 
 	if (*endptr != '\0' || endptr == value)
 		return (V_INVALID_TEAM);
+
+    if (result < 1 || result > 255)
+        return (V_INVALID_TEAM_RANGE);
 
     return (V_SUCCESS);
 }
@@ -85,6 +88,7 @@ static const char   *validate_msg[] = {
     [V_SUCCESS]                     = "success",
     [V_MISSING_TEAM]                = "team number is required",
     [V_INVALID_TEAM]                = "team number must be greater than 0",
+    [V_INVALID_TEAM_RANGE]          = "team number must be between 1 and " STR(MAX_TEAM),
     [V_INVALID_AI_LEVEL]            = "AI level must be between " STR(MIN_AI_LEVEL) " and " STR(MAX_AI_LEVEL),
     [V_INVALID_MAP_SIZE]            = "map size must be between " STR(MIN_MAP_SIZE) " and " STR(MAX_MAP_SIZE),
     [V_CONFLICT_SPECTATOR_REPLAY]   = "--spectator and --replay are mutually exclusive",

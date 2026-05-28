@@ -7,6 +7,7 @@ typedef enum    e_validate {
     V_SUCCESS,
     V_MISSING_TEAM,
     V_INVALID_TEAM,
+    V_INVALID_TEAM_RANGE,
     V_INVALID_AI_LEVEL,
     V_INVALID_MAP_SIZE,
     V_CONFLICT_SPECTATOR_REPLAY,
