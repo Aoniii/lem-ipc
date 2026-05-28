@@ -1,5 +1,7 @@
 #include "lem-ipc.h"
 #include "parser.h"
+#include "validation.h"
+#include "print.h"
 #include <stdbool.h>
 
 int main(int argc, char** argv) {
@@ -78,17 +80,21 @@ int main(int argc, char** argv) {
 			},
 			.help		= "give this help list"
 		},
-        { 0 }
+        {0}
     };
 
-    char **args = parser(argc,argv, options, MODE_PERMISSIVE, &ctx);
+    char **args = parser(argc, argv, options, MODE_PERMISSIVE, &ctx);
     if (ctx.err != PARSER_SUCCESS) {
 		error(info.program, &ctx);
 		cleaner(args);
 		return (ctx.err == CALLBACK_EXIT ? 0 : 1);
 	}
 
-    debug(args, options);
+    t_validate  ret = validate_args(&data, args);
+    if (ret != V_SUCCESS) {
+        ft_printf("lemipc: error: %s\n", validate_str(ret));
+        return (1);
+    }
 
     cleaner(args);
     return (0);

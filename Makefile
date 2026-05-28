@@ -47,16 +47,16 @@ $(OBJS_DIR)/$(LIBFT_DIR)/%.o: $(LIBFT_DIR)/%.c
 	@COUNT=$$(($$(cat .count1) + 1)); \
 	echo $$COUNT > .count1; \
 	PERCENT=$$(($$COUNT * 100 / $(TOTAL_FILES_LIBFT))); \
-	printf "$(CUT)$(RESET)[$(YELLOW)%3d%%$(RESET)] 🎖️  Training Stormtroopers:$(RESET) %s\n" $$PERCENT $(notdir $<)
+	printf "$(CUT)$(RESET)[$(YELLOW)%3d%%$(RESET)] 🎖️ Training Stormtroopers:$(RESET) %s\n" $$PERCENT $(notdir $<)
 	@$(CC) $(CFLAGS) -I $(LIBFT_DIR) -c $< -o $@
 	@printf "$(UP)"
 
 $(LIBFT_NAME): $(LIBFT_OBJS_PATH)
-	@printf "$(RESET)[$(GREEN)DONE$(RESET)] ⚔️  $(CYAN)Imperial Academy training complete.$(RESET)$(CUT)\n"
+	@printf "$(RESET)[$(GREEN)DONE$(RESET)] ⚔️ $(CYAN)Imperial Academy training complete.$(RESET)$(CUT)\n"
 	@mkdir -p $(@D)
 	@ar rcs $(LIBFT_NAME) $(LIBFT_OBJS_PATH)
 	@rm -f .count1
-	@printf "$(RESET)[$(GREEN)DONE$(RESET)] 🛡️  $(BLUE)The $(notdir $(LIBFT_NAME)) are ready for your command.$(RESET)$(CUT)\n"
+	@printf "$(RESET)[$(GREEN)DONE$(RESET)] 🛡️ $(BLUE)The $(notdir $(LIBFT_NAME)) are ready for your command.$(RESET)$(CUT)\n"
 
 $(OBJS_DIR)/$(PRINTF_DIR)/%.o: $(PRINTF_DIR)/%.c
 	@mkdir -p $(@D)
@@ -81,19 +81,19 @@ $(OBJS_DIR)/%.o: %.c
 	@COUNT=$$(($$(cat .count3) + 1)); \
 	echo $$COUNT > .count3; \
 	PERCENT=$$(($$COUNT * 100 / $(TOTAL_FILES))); \
-	printf "$(CUT)$(RESET)[$(YELLOW)%3d%%$(RESET)] 🏗️  Constructing Death Star: %s\n" $$PERCENT $(notdir $<)
+	printf "$(CUT)$(RESET)[$(YELLOW)%3d%%$(RESET)] 🏗️ Constructing Death Star: %s\n" $$PERCENT $(notdir $<)
 	@$(CC) $(CFLAGS) -I include -I $(LIBFT_DIR) -I $(PARSER_DIR) -c $< -o $@
 	@printf "$(UP)"
 
 $(NAME): $(LIBFT_NAME) $(PRINTF_NAME) $(OBJS_PATH)
-	@printf "$(RESET)[$(GREEN)DONE$(RESET)] 🌩️  $(CYAN)Commence primary ignition!$(RESET)$(CUT)\n"
+	@printf "$(RESET)[$(GREEN)DONE$(RESET)] 🌩️ $(CYAN)Commence primary ignition!$(RESET)$(CUT)\n"
 	@$(CC) $(CFLAGS) $(OBJS_PATH) $(LIBFT_NAME) $(PRINTF_NAME) -o $(NAME)
 	@rm -f .count1 .count2 .count3
-	@printf "$(RESET)[$(GREEN)DONE$(RESET)] 🛰️  $(BLUE)$(NAME) is fully operational!$(RESET)$(CUT)\n"
+	@printf "$(RESET)[$(GREEN)DONE$(RESET)] 🛰️ $(BLUE)$(NAME) is fully operational!$(RESET)$(CUT)\n"
 
 all:
 	@if $(MAKE) -q $(NAME) --no-print-directory; then \
-		printf "$(RESET)[$(GREEN)DONE$(RESET)] 🛰️$(BLUE) The Death Star is already at full power, My Lord.$(RESET)\n"; \
+		printf "$(RESET)[$(GREEN)DONE$(RESET)] 🛰️ $(BLUE)The Death Star is already at full power, My Lord.$(RESET)\n"; \
 	else \
 		$(MAKE) $(NAME) --no-print-directory; \
 	fi
