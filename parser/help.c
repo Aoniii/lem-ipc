@@ -1,6 +1,8 @@
 #include "parser.h"
 #include <stdio.h>
 
+int ft_printf(const char *format, ...);
+
 static void help(const t_parser_info info, const t_option *options);
 
 void	callback_help(void *data) {
@@ -11,14 +13,14 @@ void	callback_help(void *data) {
 static void help(const t_parser_info info, const t_option *options) {
 	char		buf[128];
 
-	printf("Usage: %s %s\n", info.program, info.usage);
-	printf("%s\n", info.description);
+	ft_printf("Usage: %s %s\n", info.program, info.usage);
+	ft_printf("%s\n", info.description);
 
 	for (const t_option *opt = options; ; opt++) {
 		if (opt->flags == 0 && !opt->short_opt && !opt->long_opt)
 			break;
 		if (opt->flags & OPT_CATEGORY) {
-			printf("%s", opt->help);
+			ft_printf("%s", opt->help);
 			continue;
 		}
 		if (opt->flags & OPT_HIDDEN_HELP)
@@ -32,8 +34,8 @@ static void help(const t_parser_info info, const t_option *options) {
 			snprintf(buf, sizeof(buf), "      --%-20s", opt->long_opt);
 		else
 			continue;
-		printf("%s %s\n", buf, opt->help);
+		ft_printf("%s %s\n", buf, opt->help);
 	}
 
-	printf("%s\n", info.footer);
+	ft_printf("%s\n", info.footer);
 }

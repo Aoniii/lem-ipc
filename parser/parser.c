@@ -1,6 +1,6 @@
 #include "parser.h"
+#include "libft.h"
 #include <stdbool.h>
-#include <string.h>
 
 static const t_option	*find_long_option(const t_option *options, char *key);
 static const t_option	*find_short_option(const t_option *options, char c);
@@ -57,16 +57,16 @@ char	**parser(int argc, char **argv, const t_option *options, int mode, t_parser
 		}
 
 		/**		Force argument parsing		*/
-		if (strlen(token) == 2 && strncmp(token, "--", 2) == 0) {
+		if (ft_strlen(token) == 2 && ft_strncmp(token, "--", 2) == 0) {
 			force_arg = true;
 			index++;
 			continue;
 		}
 
 		/**		Long option parsing			*/
-		if (strlen(token) > 2 && strncmp(token, "--", 2) == 0) {
+		if (ft_strlen(token) > 2 && ft_strncmp(token, "--", 2) == 0) {
 			char *key = token + 2;
-			char *equal_pos = strchr(token, '=');
+			char *equal_pos = ft_strchr(token, '=');
 			char *value = NULL;
 
 			if (equal_pos) {
@@ -101,7 +101,7 @@ char	**parser(int argc, char **argv, const t_option *options, int mode, t_parser
 		}
 
 		/**		Short option parsing			*/
-		if (strlen(token) > 1 && token[0] == '-') {
+		if (ft_strlen(token) > 1 && token[0] == '-') {
 			char	*p = token + 1;
 
 			while (*p) {
@@ -161,7 +161,7 @@ static const t_option	*find_long_option(const t_option *options, char *key) {
 		}
 		if (options->flags & OPT_LONG)
 			if (options->long_opt)
-				if (strcmp(options->long_opt, key) == 0)
+				if (ft_strncmp(options->long_opt, key, ft_strlen(options->long_opt) + 1) == 0)
 					return (options);
 		options++;
 	}
