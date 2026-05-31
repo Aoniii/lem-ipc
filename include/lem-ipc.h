@@ -14,6 +14,9 @@
 # define MIN_AI_LEVEL       1
 # define MAX_AI_LEVEL       3
 
+# define TILE_EMPTY 0
+# define TILE_WALL  255
+
 typedef struct      s_data {
     unsigned int    map_size;
     unsigned int    ai;
