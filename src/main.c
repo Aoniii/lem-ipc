@@ -2,6 +2,7 @@
 #include "parser.h"
 #include "validation.h"
 #include "print.h"
+#include "game.h"
 #include <stdbool.h>
 
 int main(int argc, char** argv) {
@@ -21,7 +22,8 @@ int main(int argc, char** argv) {
         .spectator = false,
         .walls = false,
         .replay = false,
-        .verbose = false
+        .verbose = false,
+        .team = 0
     };
 
     t_option    options[] = {
@@ -90,12 +92,17 @@ int main(int argc, char** argv) {
 		return (ctx.err == CALLBACK_EXIT ? 0 : 1);
 	}
 
-    t_validate  ret = validate_args(&data, args);
-    if (ret != V_SUCCESS) {
-        ft_printf("lemipc: error: %s\n", validate_str(ret));
+    t_validate  validate = validate_args(&data, args);
+    if (validate != V_SUCCESS) {
+        ft_printf("lemipc: error: %s\n", validate_str(validate));
         return (1);
     }
 
+    int ret = 0;
+    if (!data.replay)
+        ret = game_start(&data);
+    //TODO: add replay
+
     cleaner(args);
-    return (0);
+    return (ret);
 }

@@ -11,7 +11,7 @@ t_validate  validate_args(t_data *data, char **args) {
         return (validate);
 
     if (!data->spectator && !data->replay) {
-        validate = validate_team(args);
+        validate = validate_team(data, args);
         if (validate != V_SUCCESS)
             return (validate);
     }
@@ -31,7 +31,7 @@ t_validate  validate_args(t_data *data, char **args) {
     return (V_SUCCESS);
 }
 
-t_validate  validate_team(char **args) {
+t_validate  validate_team(t_data *data, char **args) {
     if (args == NULL || args[0] == NULL)
         return (V_MISSING_TEAM);
 
@@ -44,6 +44,8 @@ t_validate  validate_team(char **args) {
 
     if (result < 1 || result > 255)
         return (V_INVALID_TEAM_RANGE);
+
+    data->team = result;
 
     return (V_SUCCESS);
 }

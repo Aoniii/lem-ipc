@@ -6,7 +6,7 @@
 # define STRINGIFY(x)   #x
 # define STR(x)         STRINGIFY(x)
 
-# define MAX_TEAM           255
+# define MAX_TEAM           128
 # define DEFAULT_MAP_SIZE   10
 # define DEFAULT_AI_LEVEL   1
 # define MIN_MAP_SIZE       5
@@ -21,6 +21,12 @@ typedef struct      s_data {
     bool            walls;
     bool            replay;
     bool            verbose;
+    unsigned char   team;
+    int             shm_id;
+    int             sem_id;
+    int             msg_id;
+    void*           shm_ptr;
+    bool            is_first;
 }                   t_data;
 
 #endif
