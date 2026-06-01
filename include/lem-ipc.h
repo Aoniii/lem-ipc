@@ -32,4 +32,9 @@ typedef struct      s_data {
     bool            is_first;
 }                   t_data;
 
+typedef struct  s_pos {
+    int         x;
+    int         y;
+}               t_pos;
+
 #endif

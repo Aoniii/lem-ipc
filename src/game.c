@@ -1,5 +1,6 @@
 #include "ipc.h"
 #include "lem-ipc.h"
+#include "player.h"
 #include "print.h"
 #include "board.h"
 
@@ -9,7 +10,11 @@ int game_start(t_data *data) {
         return (-1);
     }
 
-    ft_printf("count: %i\n", board_count(data, 0));
+    t_pos   pos;
+    if (player_place(data, &pos) == -1) {
+        //print error
+        return (-1);
+    }
 
     return (0);
 }

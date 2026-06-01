@@ -4,6 +4,9 @@
 #include "print.h"
 #include "game.h"
 #include <stdbool.h>
+#include <stdlib.h>
+#include <time.h>
+#include <unistd.h>
 
 int main(int argc, char** argv) {
     t_parser_ctx    ctx;
@@ -97,6 +100,8 @@ int main(int argc, char** argv) {
         ft_printf("lemipc: error: %s\n", validate_str(validate));
         return (1);
     }
+
+    srand(getpid() ^ time(NULL));
 
     int ret = 0;
     if (!data.replay)
