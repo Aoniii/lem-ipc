@@ -6,7 +6,7 @@
 # define STRINGIFY(x)   #x
 # define STR(x)         STRINGIFY(x)
 
-# define MAX_TEAM           128
+# define MAX_TEAM           16
 # define DEFAULT_MAP_SIZE   10
 # define DEFAULT_AI_LEVEL   1
 # define MIN_MAP_SIZE       5

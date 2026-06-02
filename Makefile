@@ -87,7 +87,7 @@ $(OBJS_DIR)/%.o: %.c
 
 $(NAME): $(LIBFT_NAME) $(PRINTF_NAME) $(OBJS_PATH)
 	@printf "$(RESET)[$(GREEN)DONE$(RESET)] 🌩️ $(CYAN)Commence primary ignition!$(RESET)$(CUT)\n"
-	@$(CC) $(CFLAGS) $(OBJS_PATH) $(LIBFT_NAME) $(PRINTF_NAME) -o $(NAME)
+	@$(CC) $(CFLAGS) $(OBJS_PATH) $(LIBFT_NAME) $(PRINTF_NAME) -o $(NAME) -lncursesw
 	@rm -f .count1 .count2 .count3
 	@printf "$(RESET)[$(GREEN)DONE$(RESET)] 🛰️ $(BLUE)$(NAME) is fully operational!$(RESET)$(CUT)\n"
 
