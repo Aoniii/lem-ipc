@@ -11,7 +11,7 @@
 #include <unistd.h>
 
 static int  create_ipc_file(void) {
-    int fd = open(IPC_PATH, O_CREAT | O_RDONLY, 0666);
+    int fd = open(IPC_PATH, O_CREAT | O_RDONLY, IPC_PERMS);
     if (fd != -1)
         close(fd);
     return (fd);
@@ -48,9 +48,22 @@ static int  ipc_create(t_data *data, key_t key) {
     header = (t_shm_header *)data->shm_ptr;
     header->map_size = data->map_size;
     header->player_count = 0;
+    header->ready = 1;
     data->is_first = true;
 
     return (0);
+}
+
+static int  shm_wait_ready(t_shm_header *header) {
+    int retry = 0;
+
+    while (retry < SHM_MAX_RETRY) {
+        if (header->ready == 1)
+            return (0);
+        usleep(1000);
+        retry++;
+    }
+    return (-1);
 }
 
 static int  ipc_attach(t_data *data, key_t key) {
@@ -73,6 +86,8 @@ static int  ipc_attach(t_data *data, key_t key) {
         return (-1);
 
     header = (t_shm_header *)data->shm_ptr;
+    if (shm_wait_ready(header) == -1)
+        return (-1);
     data->map_size = header->map_size;
     data->is_first = false;
 

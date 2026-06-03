@@ -42,7 +42,7 @@ t_validate  validate_team(t_data *data, char **args) {
 	if (*endptr != '\0' || endptr == value)
 		return (V_INVALID_TEAM);
 
-    if (result < 1 || result > 255)
+    if (result < 1 || result > MAX_TEAM)
         return (V_INVALID_TEAM_RANGE);
 
     data->team = result;

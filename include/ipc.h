@@ -7,13 +7,14 @@
 # include "lem-ipc.h"
 
 # define IPC_PATH   "/tmp/lemipc"
-# define IPC_PROJ   42
+# define IPC_PROJ   '*'
 # define IPC_PERMS  0600
 
 # define SEM_MAX_RETRY  1000
+# define SHM_MAX_RETRY  1000
 
 # define LOG_COUNT  5
-# define LOG_WIDTH  MAX_MAP_SIZE * 2
+# define LOG_WIDTH  (MAX_MAP_SIZE * 2)
 
 typedef struct s_data   t_data;
 
@@ -30,6 +31,7 @@ typedef struct      s_shm_header {
     char            logs[LOG_COUNT][LOG_WIDTH];
     int             log_count;
     int             log_head;
+    volatile int    ready;
 }                   t_shm_header;
 
 // ipc.c
