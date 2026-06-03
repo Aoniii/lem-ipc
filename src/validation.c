@@ -65,6 +65,10 @@ t_validate  validate_map_size(t_data *data) {
 t_validate  validate_mode_conflicts(t_data *data) {
     if (data->spectator && data->replay)
         return (V_CONFLICT_SPECTATOR_REPLAY);
+    if (data->spectator && data->human)
+        return (V_CONFLICT_SPECTATOR_HUMAN);
+    if (data->human && data->replay)
+        return (V_CONFLICT_HUMAN_REPLAY);
     return (V_SUCCESS);
 }
 
@@ -94,6 +98,8 @@ static const char   *validate_msg[] = {
     [V_INVALID_AI_LEVEL]            = "AI level must be between " STR(MIN_AI_LEVEL) " and " STR(MAX_AI_LEVEL),
     [V_INVALID_MAP_SIZE]            = "map size must be between " STR(MIN_MAP_SIZE) " and " STR(MAX_MAP_SIZE),
     [V_CONFLICT_SPECTATOR_REPLAY]   = "--spectator and --replay are mutually exclusive",
+    [V_CONFLICT_SPECTATOR_HUMAN]    = "--spectator and --human are mutually exclusive",
+    [V_CONFLICT_HUMAN_REPLAY]       = "--human and --replay are mutually exclusive",
     [V_REPLAY_FILE_MISSING]         = "replay file not found",
     [V_REPLAY_FILE_INVALID_EXT]     = "replay file must have .log extension",
     [V_REPLAY_FILE_UNREADABLE]      = "replay file is not readable",

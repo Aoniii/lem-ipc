@@ -23,6 +23,7 @@ int main(int argc, char** argv) {
         .map_size = DEFAULT_MAP_SIZE,
         .ai = DEFAULT_AI_LEVEL,
         .spectator = false,
+        .human = false,
         .walls = false,
         .replay = false,
         .verbose = false,
@@ -35,14 +36,14 @@ int main(int argc, char** argv) {
             .long_opt   = "map-size",
             .flags      = OPT_LONG | TYPE_UINT,
             .value      = &data.map_size,
-            .help       = "set map size (first player only, default: 10)"
+            .help       = "set map size (first player only, default: " STR(DEFAULT_MAP_SIZE) ")"
         },
         {
             .short_opt  = 0,
             .long_opt   = "ai",
             .flags      = OPT_LONG | TYPE_UINT,
             .value      = &data.ai,
-            .help       = "set AI level: 1=random, 2=chase, 3=coordinated (default: 1)"
+            .help       = "set AI level: 1=random, 2=chase, 3=coordinated (default: " STR(DEFAULT_AI_LEVEL) ")"
         },
         {
             .short_opt  = 0,
@@ -50,6 +51,13 @@ int main(int argc, char** argv) {
             .flags      = OPT_LONG | TYPE_BOOLEAN,
             .value      = &data.spectator,
             .help       = "launch as spectator (read-only, no team required)"
+        },
+        {
+            .short_opt  = 0,
+            .long_opt   = "human",
+            .flags      = OPT_LONG | TYPE_BOOLEAN,
+            .value      = &data.human,
+            .help       = "launch as human"
         },
         {
             .short_opt  = 0,
