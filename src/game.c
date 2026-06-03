@@ -12,8 +12,9 @@
 
 int game_start(t_data *data) {
     unsigned char   *snapshot;
-    t_pos           pos;
     unsigned int    board_size;
+    t_pos           pos = {0};
+    t_logs          logs = {0};
 
     if (ipc_init(data) != 0) {
         ft_printf("lemipc: error: failed to initialize IPC\n");
@@ -45,19 +46,20 @@ int game_start(t_data *data) {
         }
     }
 
-    game_loop(data, snapshot, board_size);
+    log_push(&logs, "spawned at (%d, %d)", pos.x + 1, pos.y + 1);
+    game_loop(data, snapshot, board_size, &logs);
     free(snapshot);
     display_destroy();
     //ipc_cleanup(data);
     return (0);
 }
 
-void    game_loop(t_data *data, unsigned char *snapshot, unsigned int size) {
+void    game_loop(t_data *data, unsigned char *snapshot, unsigned int size, t_logs *logs) {
     while (1) {
         sem_lock(data->sem_id);
         ft_memcpy(snapshot,  board_get(data), size);
         sem_unlock(data->sem_id);
-        display_render(data, snapshot);
-        usleep(1000000/FPS);
+        display_render(data, snapshot, logs);
+        usleep(1000000 / FPS);
     }
 }
