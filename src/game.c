@@ -47,19 +47,19 @@ int game_start(t_data *data) {
     }
 
     log_push(&logs, "spawned at (%d, %d)", pos.x + 1, pos.y + 1);
-    game_loop(data, snapshot, board_size, &logs);
+    game_loop(data, snapshot, board_size, &logs, &pos);
     free(snapshot);
     display_destroy();
     //ipc_cleanup(data);
     return (0);
 }
 
-void    game_loop(t_data *data, unsigned char *snapshot, unsigned int size, t_logs *logs) {
+void    game_loop(t_data *data, unsigned char *snapshot, unsigned int size, t_logs *logs, t_pos *pos) {
     while (1) {
         sem_lock(data->sem_id);
         ft_memcpy(snapshot,  board_get(data), size);
         sem_unlock(data->sem_id);
-        display_render(data, snapshot, logs);
+        display_render(data, snapshot, logs, pos);
         usleep(1000000 / FPS);
     }
 }

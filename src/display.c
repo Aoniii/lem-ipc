@@ -1,5 +1,6 @@
 #include "lem-ipc.h"
 #include "display.h"
+#include <sys/time.h>
 #include <ncurses.h>
 #include <locale.h>
 
@@ -25,6 +26,8 @@ static void	init_team_colors(void) {
 		}
 		i++;
 	}
+
+    init_pair(BLACK_ATTR, COLOR_BLACK, COLOR_BLACK);
 }
 
 int display_init(t_data *data) {
@@ -54,31 +57,38 @@ int display_init(t_data *data) {
     return (0);
 }
 
-static void draw_border(unsigned int start_height, unsigned int height) {
+static void draw_border(unsigned int height, unsigned int start_y) {
     unsigned int    width = MAX_MAP_SIZE * 2;
     unsigned int    i;
 
-    mvaddch(start_height, 0, ACS_ULCORNER);
-    mvaddch(start_height, width + 1, ACS_URCORNER);
-    mvaddch(start_height + height + 1, 0, ACS_LLCORNER);
-    mvaddch(start_height + height + 1, width + 1, ACS_LRCORNER);
+    mvaddch(start_y, 0, ACS_ULCORNER);
+    mvaddch(start_y, width + 1, ACS_URCORNER);
+    mvaddch(start_y + height + 1, 0, ACS_LLCORNER);
+    mvaddch(start_y + height + 1, width + 1, ACS_LRCORNER);
 
     i = 1;
     while (i <= width) {
-        mvaddch(start_height, i, ACS_HLINE);
-        mvaddch(start_height + height + 1, i, ACS_HLINE);
+        mvaddch(start_y, i, ACS_HLINE);
+        mvaddch(start_y + height + 1, i, ACS_HLINE);
         i++;
     }
 
     i = 1;
     while (i <= height) {
-        mvaddch(start_height + i, 0, ACS_VLINE);
-        mvaddch(start_height + i, width + 1, ACS_VLINE);
+        mvaddch(start_y + i, 0, ACS_VLINE);
+        mvaddch(start_y + i, width + 1, ACS_VLINE);
         i++;
     }
 }
 
-static void draw_map(t_data *data, unsigned char *snapshot) {
+static int blink_on(void) {
+    struct timeval  tv;
+
+    gettimeofday(&tv, NULL);
+    return ((tv.tv_usec / BLINK_TIME) % 2 == 0);
+}
+
+static void draw_map(t_data *data, unsigned char *snapshot, t_pos *pos) {
     int offset_x = 1 + MAX_MAP_SIZE - data->map_size;
     int offset_y = 1;
 
@@ -99,10 +109,14 @@ static void draw_map(t_data *data, unsigned char *snapshot) {
                 mvaddch(y + offset_y, x * 2 + offset_x, '.');
                 mvaddch(y + offset_y, x * 2 + offset_x + 1, '.');
             } else {
-                attron(COLOR_PAIR(tile));
+                int attr = COLOR_PAIR(tile);
+                if (pos && (int)x == pos->x && (int)y == pos->y && !blink_on())
+                    attr = COLOR_PAIR(BLACK_ATTR);
+
+                attron(attr);
                 mvaddstr(y + offset_y, x * 2 + offset_x, "\u2580");
                 mvaddstr(y + offset_y, x * 2 + offset_x + 1, "\u2584");
-                attroff(COLOR_PAIR(tile));
+                attroff(attr);
             }
             x++;
         }
@@ -122,11 +136,25 @@ static void draw_logs(t_logs *logs, unsigned int start_y) {
     }
 }
 
-void    display_render(t_data *data, unsigned char *snapshot, t_logs *logs) {
+static void draw_team_info(t_data *data, unsigned int start_y) {
+    if (data->spectator) {
+        mvprintw(start_y, 2, "You are spectator");
+        return;
+    }
+
+    mvprintw(start_y, 2, "You are team: ");
+    attron(COLOR_PAIR(data->team));
+    addstr("\u2580\u2584");
+    attroff(COLOR_PAIR(data->team));
+    printw(" #%u", data->team);
+}
+
+void    display_render(t_data *data, unsigned char *snapshot, t_logs *logs, t_pos *pos) {
     clear();
-    draw_border(0, data->map_size);
-    draw_map(data, snapshot);
-    draw_border(data->map_size + MARGIN, 5);
+    draw_border(data->map_size, 0);
+    draw_map(data, snapshot, pos);
+    draw_team_info(data, data->map_size + 2);
+    draw_border(5, data->map_size + MARGIN);
     draw_logs(logs, data->map_size + MARGIN);
     refresh();
 }
