@@ -32,6 +32,7 @@ typedef struct      s_shm_header {
     int             log_count;
     int             log_head;
     volatile int    ready;
+    volatile int    running;
 }                   t_shm_header;
 
 // ipc.c

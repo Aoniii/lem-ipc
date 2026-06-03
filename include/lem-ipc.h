@@ -34,6 +34,7 @@ typedef struct      s_data {
     int             msg_id;
     void*           shm_ptr;
     bool            is_first;
+    bool            is_alive;
 }                   t_data;
 
 typedef struct  s_pos {

@@ -48,6 +48,7 @@ static int  ipc_create(t_data *data, key_t key) {
     header = (t_shm_header *)data->shm_ptr;
     header->map_size = data->map_size;
     header->player_count = 0;
+    header->running = 1;
     header->ready = 1;
     data->is_first = true;
 
@@ -108,4 +109,29 @@ int ipc_init(t_data *data) {
         return (ipc_attach(data, key));
 
     return (ret);
+}
+
+void    ipc_cleanup(t_data *data) {
+    t_shm_header    *header;
+    bool            last;
+
+    if (!data->shm_ptr || data->shm_ptr == (void *)-1)
+        return;
+
+    header = (t_shm_header *)data->shm_ptr;
+    last = false;
+    if (!data->spectator) {
+        sem_lock(data->sem_id);
+        if (header->player_count > 0) header->player_count--;
+        if (header->player_count == 0) last = true;
+        sem_unlock(data->sem_id);
+    }
+
+    shmdt(data->shm_ptr);
+    if (last) {
+        shmctl(data->shm_id, IPC_RMID, NULL);
+        semctl(data->sem_id, 0, IPC_RMID);
+        msgctl(data->msg_id, IPC_RMID, NULL);
+        unlink(IPC_PATH);
+    }
 }

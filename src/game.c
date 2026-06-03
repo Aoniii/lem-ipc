@@ -11,8 +11,6 @@
 #include <unistd.h>
 
 int game_start(t_data *data) {
-    unsigned char   *snapshot;
-    unsigned int    board_size;
     t_pos           pos = {0};
     bool            show_display = (data->human || data->spectator);
 
@@ -23,50 +21,61 @@ int game_start(t_data *data) {
 
     if (show_display) {
         if (display_init(data) != 0) {
-            //ipc_cleanup(data);
+            ipc_cleanup(data);
             ft_printf("lemipc: error: display init failed (terminal too small?)\n");
             return (1);
         }
     }
 
-    board_size = data->map_size * data->map_size;
-    snapshot = malloc(board_size);
-    if (!snapshot) {
-        if (show_display) display_destroy();
-        //ipc_cleanup(data);
-        ft_printf("lemipc: error: memory allocation failed\n");
-        return (1);
-    }
-
     if (!data->spectator) {
         if (player_place(data, &pos) == -1) {
-            free(snapshot);
             if (show_display) display_destroy();
-            //ipc_cleanup(data);
+            ipc_cleanup(data);
             ft_printf("lemipc: error: board is full\n");
             return (1);
         }
         sem_lock(data->sem_id);
         log_push(data, "[+] Team %d joined at (%d, %d)", data->team, pos.x + 1, pos.y + 1);
+        ((t_shm_header *)data->shm_ptr)->player_count++;
         sem_unlock(data->sem_id);
     }
 
-    game_loop(data, snapshot, board_size, show_display, &pos);
-    free(snapshot);
+    data->is_alive = true;
+    int ret = game_loop(data, show_display, &pos);
     if (show_display) display_destroy();
-    //ipc_cleanup(data);
-    return (0);
+    ipc_cleanup(data);
+    return (ret);
 }
 
-void    game_loop(t_data *data, unsigned char *snapshot, unsigned int size, bool show_display, t_pos *pos) {
-    while (1) {
-        if (show_display) {
-            sem_lock(data->sem_id);
-            ft_memcpy(snapshot,  board_get(data), size);
+int game_loop(t_data *data, bool show_display, t_pos *pos) {
+    t_shm_header    *header = (t_shm_header *)data->shm_ptr;
+	int             running = 1;
+    unsigned int    size = data->map_size * data->map_size;
+    unsigned char   *snapshot = NULL;
+
+    if (show_display) {
+        snapshot = malloc(size);
+        if (!snapshot) {
+            ft_printf("lemipc: error: memory allocation failed\n");
+            return (1);
+        }
+    }
+
+    while (running && data->is_alive) {
+        sem_lock(data->sem_id);
+
+        running = header->running;
+        if (!running) {
             sem_unlock(data->sem_id);
-            display_render(data, snapshot, pos);
+            break ;
         }
 
+        if (show_display) ft_memcpy(snapshot,  board_get(data), size);
+        sem_unlock(data->sem_id);
+        if (show_display) display_render(data, snapshot, pos);
         usleep(1000000 / FPS);
     }
+
+    if (show_display) free(snapshot);
+    return (0);
 }
