@@ -1,14 +1,16 @@
-#include "display.h"
+#include "ipc.h"
+#include "lem-ipc.h"
 #include <stdarg.h>
 #include <stdio.h>
 
-void    log_push(t_logs *logs, const char *fmt, ...) {
-    va_list ap;
+void    log_push(t_data *data, const char *fmt, ...) {
+    t_shm_header    *header = (t_shm_header *)data->shm_ptr;
+    va_list         ap;
 
     va_start(ap, fmt);
-    vsnprintf(logs->lines[logs->head], LOG_WIDTH, fmt, ap);
+    vsnprintf(header->logs[header->log_head], LOG_WIDTH, fmt, ap);
     va_end(ap);
-    logs->head = (logs->head + 1) % LOG_COUNT;
-    if (logs->count < LOG_COUNT)
-        logs->count++;
+    header->log_head = (header->log_head + 1) % LOG_COUNT;
+    if (header->log_count < LOG_COUNT)
+        header->log_count++;
 }

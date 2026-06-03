@@ -4,6 +4,7 @@
 # include <sys/ipc.h>
 # include <sys/sem.h>
 # include <stdbool.h>
+# include "lem-ipc.h"
 
 # define IPC_PATH   "/tmp/lemipc"
 # define IPC_PROJ   42
@@ -11,10 +12,13 @@
 
 # define SEM_MAX_RETRY  1000
 
+# define LOG_COUNT  5
+# define LOG_WIDTH  MAX_MAP_SIZE * 2
+
 typedef struct s_data   t_data;
 
 // semun is not defined by glibc.
-union   semun {
+union               semun {
     int             val;
     struct semid_ds *buf;
     unsigned short  *array;
@@ -23,6 +27,9 @@ union   semun {
 typedef struct      s_shm_header {
     unsigned int    map_size;
     unsigned int    player_count;
+    char            logs[LOG_COUNT][LOG_WIDTH];
+    int             log_count;
+    int             log_head;
 }                   t_shm_header;
 
 // ipc.c

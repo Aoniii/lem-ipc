@@ -14,7 +14,6 @@ int game_start(t_data *data) {
     unsigned char   *snapshot;
     unsigned int    board_size;
     t_pos           pos = {0};
-    t_logs          logs = {0};
     bool            show_display = (data->human || data->spectator);
 
     if (ipc_init(data) != 0) {
@@ -47,24 +46,25 @@ int game_start(t_data *data) {
             ft_printf("lemipc: error: board is full\n");
             return (1);
         }
-        if (show_display)
-            log_push(&logs, "spawned at (%d, %d)", pos.x + 1, pos.y + 1);
+        sem_lock(data->sem_id);
+        log_push(data, "[+] Team %d joined at (%d, %d)", data->team, pos.x + 1, pos.y + 1);
+        sem_unlock(data->sem_id);
     }
 
-    game_loop(data, snapshot, board_size, show_display, &logs, &pos);
+    game_loop(data, snapshot, board_size, show_display, &pos);
     free(snapshot);
     if (show_display) display_destroy();
     //ipc_cleanup(data);
     return (0);
 }
 
-void    game_loop(t_data *data, unsigned char *snapshot, unsigned int size, bool show_display, t_logs *logs, t_pos *pos) {
+void    game_loop(t_data *data, unsigned char *snapshot, unsigned int size, bool show_display, t_pos *pos) {
     while (1) {
         if (show_display) {
             sem_lock(data->sem_id);
             ft_memcpy(snapshot,  board_get(data), size);
             sem_unlock(data->sem_id);
-            display_render(data, snapshot, logs, pos);
+            display_render(data, snapshot, pos);
         }
 
         usleep(1000000 / FPS);

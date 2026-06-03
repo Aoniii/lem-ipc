@@ -1,3 +1,4 @@
+#include "ipc.h"
 #include "lem-ipc.h"
 #include "display.h"
 #include <sys/time.h>
@@ -124,14 +125,14 @@ static void draw_map(t_data *data, unsigned char *snapshot, t_pos *pos) {
     }
 }
 
-static void draw_logs(t_logs *logs, unsigned int start_y) {
-    int i;
-    int idx;
+static void draw_logs(t_data *data, unsigned int start_y) {
+    t_shm_header    *header = (t_shm_header *)data->shm_ptr;
+    int             i = 0;
+    int             idx;
 
-    i = 0;
-    while (i < logs->count) {
-        idx = (logs->head - logs->count + i + LOG_COUNT) % LOG_COUNT;
-        mvprintw(start_y + 1 + i, 2, "%s", logs->lines[idx]);
+    while (i < header->log_count) {
+        idx = (header->log_head - header->log_count + i + LOG_COUNT) % LOG_COUNT;
+        mvprintw(start_y + 1 + i, 2, "%s", header->logs[idx]);
         i++;
     }
 }
@@ -149,13 +150,13 @@ static void draw_team_info(t_data *data, unsigned int start_y) {
     printw(" #%u", data->team);
 }
 
-void    display_render(t_data *data, unsigned char *snapshot, t_logs *logs, t_pos *pos) {
+void    display_render(t_data *data, unsigned char *snapshot, t_pos *pos) {
     clear();
     draw_border(data->map_size, 0);
     draw_map(data, snapshot, pos);
     draw_team_info(data, data->map_size + 2);
     draw_border(5, data->map_size + MARGIN);
-    draw_logs(logs, data->map_size + MARGIN);
+    draw_logs(data, data->map_size + MARGIN);
     refresh();
 }
 
