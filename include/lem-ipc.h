@@ -17,6 +17,8 @@
 # define TILE_EMPTY 0
 # define TILE_WALL  255
 
+# define FPS    30
+
 typedef struct      s_data {
     unsigned int    map_size;
     unsigned int    ai;

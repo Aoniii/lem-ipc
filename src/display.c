@@ -54,12 +54,35 @@ int display_init(t_data *data) {
     return (0);
 }
 
-void    display_render(t_data *data, unsigned char *snapshot) {
+static void draw_map_border(unsigned map_size) {
+    unsigned int    width = MAX_MAP_SIZE * 2;
+    unsigned int    i;
+
+    mvaddch(0, 0, ACS_ULCORNER);
+    mvaddch(0, width + 1, ACS_URCORNER);
+    mvaddch(map_size + 1, 0, ACS_LLCORNER);
+    mvaddch(map_size + 1, width + 1, ACS_LRCORNER);
+
+    i = 1;
+    while (i <= width) {
+        mvaddch(0, i, ACS_HLINE);
+        mvaddch(map_size + 1, i, ACS_HLINE);
+        i++;
+    }
+
+    i = 1;
+    while (i <= map_size) {
+        mvaddch(i, 0, ACS_VLINE);
+        mvaddch(i, width + 1, ACS_VLINE);
+        i++;
+    }
+}
+
+static void draw_map(t_data *data, unsigned char *snapshot, int offset_x, int offset_y) {
     unsigned int    y;
     unsigned int    x;
     unsigned char   tile;
 
-    clear();
     y = 0;
     while (y < data->map_size) {
         x = 0;
@@ -67,24 +90,33 @@ void    display_render(t_data *data, unsigned char *snapshot) {
             tile = snapshot[y * data->map_size + x];
 
             if (tile == TILE_WALL) {
-                mvaddch(y + 1, x * 2 + 1, '#');
-                mvaddch(y + 1, x * 2 + 2, '#');
+                mvaddch(y + offset_y, (x + offset_x) * 2 - 1, '#');
+                mvaddch(y + offset_y, (x + offset_x) * 2, '#');
             } else if (tile == TILE_EMPTY) {
-                mvaddch(y + 1, x * 2 + 1, '[');
-                mvaddch(y + 1, x * 2 + 2, ']');
+                mvaddch(y + offset_y, (x + offset_x) * 2 - 1, ' ');
+                mvaddch(y + offset_y, (x + offset_x) * 2, ' ');
             } else {
                 attron(COLOR_PAIR(tile));
-                mvaddstr(y + 1, x * 2 + 1, "\u2580");
-                mvaddstr(y + 1, x * 2 + 2, "\u2584");
+                mvaddstr(y + offset_y, (x + offset_x) * 2 - 1, "\u2580");
+                mvaddstr(y + offset_y, (x + offset_x) * 2, "\u2584");
                 attroff(COLOR_PAIR(tile));
             }
             x++;
         }
         y++;
     }
+}
+
+void    display_render(t_data *data, unsigned char *snapshot) {
+    int offset_x = (MAX_MAP_SIZE - data->map_size) / 2 + 1;
+    int offset_y = 1;
+
+    clear();
+    draw_map_border(data->map_size);
+    draw_map(data, snapshot, offset_x, offset_y);
     refresh();
 }
 
-void    display_destroy() {
+void    display_destroy(void) {
     endwin();
 }

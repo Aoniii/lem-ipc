@@ -58,6 +58,6 @@ void    game_loop(t_data *data, unsigned char *snapshot, unsigned int size) {
         ft_memcpy(snapshot,  board_get(data), size);
         sem_unlock(data->sem_id);
         display_render(data, snapshot);
-        usleep(100000);
+        usleep(1000000/FPS);
     }
 }
