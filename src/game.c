@@ -59,7 +59,7 @@ int game_loop(t_data *data, bool show_display, t_pos *pos) {
         }
     }
 
-    while (running && data->is_alive) {
+    while (running && data->is_alive && !g_stop) {
         sem_lock(data->sem_id);
 
         running = header->running;
@@ -73,15 +73,13 @@ int game_loop(t_data *data, bool show_display, t_pos *pos) {
         if (show_display) {
             display_render(data, snapshot, pos);
             int ch = getch();
-            if (ch == 'q' || ch == 'Q') {
-                if (!data->spectator) player_quit(data);
-                break ;
-            }
+            if (ch == 'q' || ch == 'Q') break ;
         }
 
         usleep(1000000 / FPS);
     }
 
+    if (!data->spectator) player_quit(data);
     if (show_display) free(snapshot);
     return (0);
 }

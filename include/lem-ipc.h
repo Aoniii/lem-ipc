@@ -2,6 +2,7 @@
 # define LEM_IPC_H
 
 # include <stdbool.h>
+# include <signal.h>
 
 # define STRINGIFY(x)   #x
 # define STR(x)         STRINGIFY(x)
@@ -19,6 +20,8 @@
 # define TILE_WALL  255
 
 # define FPS    30
+
+extern volatile sig_atomic_t    g_stop;
 
 typedef struct      s_data {
     unsigned int    map_size;
@@ -41,5 +44,7 @@ typedef struct  s_pos {
     int         x;
     int         y;
 }               t_pos;
+
+void    setup_signals(void);
 
 #endif

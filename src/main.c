@@ -109,6 +109,7 @@ int main(int argc, char** argv) {
         return (1);
     }
 
+    setup_signals();
     srand(getpid() ^ time(NULL));
 
     int ret = 0;
