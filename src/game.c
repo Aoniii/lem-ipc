@@ -7,6 +7,7 @@
 #include "board.h"
 #include "game.h"
 #include "ipc.h"
+#include <ncurses.h>
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -34,10 +35,7 @@ int game_start(t_data *data) {
             ft_printf("lemipc: error: board is full\n");
             return (1);
         }
-        sem_lock(data->sem_id);
-        log_push(data, "[+] Team %d joined at (%d, %d)", data->team, pos.x + 1, pos.y + 1);
-        ((t_shm_header *)data->shm_ptr)->player_count++;
-        sem_unlock(data->sem_id);
+        player_join(data, pos);
     }
 
     data->is_alive = true;
@@ -72,7 +70,15 @@ int game_loop(t_data *data, bool show_display, t_pos *pos) {
 
         if (show_display) ft_memcpy(snapshot,  board_get(data), size);
         sem_unlock(data->sem_id);
-        if (show_display) display_render(data, snapshot, pos);
+        if (show_display) {
+            display_render(data, snapshot, pos);
+            int ch = getch();
+            if (ch == 'q' || ch == 'Q') {
+                if (!data->spectator) player_quit(data);
+                break ;
+            }
+        }
+
         usleep(1000000 / FPS);
     }
 

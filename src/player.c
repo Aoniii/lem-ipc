@@ -1,3 +1,4 @@
+#include "display.h"
 #include "ipc.h"
 #include "lem-ipc.h"
 #include "player.h"
@@ -29,4 +30,18 @@ int player_place(t_data *data, t_pos *pos) {
     pos->y = i / data->map_size;
     sem_unlock(data->sem_id);
     return (0);
+}
+
+void    player_join(t_data *data, t_pos pos) {
+    sem_lock(data->sem_id);
+    log_push(data, "[+] Team %d joined at (%d, %d)", data->team, pos.x + 1, pos.y + 1);
+    ((t_shm_header *)data->shm_ptr)->player_count++;
+    sem_unlock(data->sem_id);
+}
+
+void    player_quit(t_data *data) {
+    sem_lock(data->sem_id);
+    log_push(data, "[-] Team %d left", data->team);
+    ((t_shm_header *)data->shm_ptr)->player_count--;
+    sem_unlock(data->sem_id);
 }

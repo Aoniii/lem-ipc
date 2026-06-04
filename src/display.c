@@ -55,6 +55,8 @@ int display_init(t_data *data) {
         endwin();
         return (-1);
     }
+
+    nodelay(stdscr, TRUE);
     return (0);
 }
 
