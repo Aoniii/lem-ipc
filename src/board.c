@@ -21,3 +21,8 @@ unsigned int    board_count(t_data *data, unsigned char value) {
 
     return (ret);
 }
+
+void    board_set_empty(t_data *data, t_pos pos) {
+    unsigned char   *board = board_get(data);
+    board[pos.y * data->map_size + pos.x] = TILE_EMPTY;
+}

@@ -36,6 +36,8 @@ int game_start(t_data *data) {
             return (1);
         }
         player_join(data, pos);
+    } else {
+        player_spectator_join(data);
     }
 
     data->is_alive = true;
@@ -79,7 +81,14 @@ int game_loop(t_data *data, bool show_display, t_pos *pos) {
         usleep(1000000 / FPS);
     }
 
-    if (!data->spectator) player_quit(data);
+    if (!data->spectator) {
+        if (data->is_alive) {
+            sem_lock(data->sem_id);
+            board_set_empty(data, *pos);
+            sem_unlock(data->sem_id);
+        }
+        player_quit(data);
+    }
     if (show_display) free(snapshot);
     return (0);
 }

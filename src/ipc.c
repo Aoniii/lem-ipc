@@ -122,7 +122,7 @@ void    ipc_cleanup(t_data *data) {
     last = false;
 
     sem_lock(data->sem_id);
-    if (!data->spectator && header->player_count > 0) header->player_count--;
+    if (header->player_count > 0) header->player_count--;
     if (header->player_count == 0) last = true;
     sem_unlock(data->sem_id);
 

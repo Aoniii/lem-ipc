@@ -39,9 +39,14 @@ void    player_join(t_data *data, t_pos pos) {
     sem_unlock(data->sem_id);
 }
 
+void    player_spectator_join(t_data *data) {
+    sem_lock(data->sem_id);
+    ((t_shm_header *)data->shm_ptr)->player_count++;
+    sem_unlock(data->sem_id);
+}
+
 void    player_quit(t_data *data) {
     sem_lock(data->sem_id);
     log_push(data, "[-] Team %d left", data->team);
-    ((t_shm_header *)data->shm_ptr)->player_count--;
     sem_unlock(data->sem_id);
 }
