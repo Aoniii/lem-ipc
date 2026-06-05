@@ -36,8 +36,6 @@ int game_start(t_data *data) {
             return (1);
         }
         player_join(data, pos);
-    } else {
-        player_spectator_join(data);
     }
 
     data->is_alive = true;
