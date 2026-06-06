@@ -44,3 +44,26 @@ void    player_quit(t_data *data) {
     log_push(data, "[-] Team %d left", data->team);
     sem_unlock(data->sem_id);
 }
+
+bool    player_move(t_data *data, t_pos *pos, int dx, int dy) {
+    unsigned char   *board;
+    int             nx = pos->x + dx;
+    int             ny = pos->y + dy;
+
+    if (nx < 0 || nx >= (int)data->map_size || ny < 0 || ny >= (int)data->map_size)
+        return (false);
+
+    sem_lock(data->sem_id);
+    board = board_get(data);
+    if (board[ny * data->map_size + nx] != TILE_EMPTY) {
+        sem_unlock(data->sem_id);
+        return (false);
+    }
+
+    board[pos->y * data->map_size + pos->x] = TILE_EMPTY;
+    board[ny * data->map_size + nx] = data->team;
+    pos->x = nx;
+    pos->y = ny;
+    sem_unlock(data->sem_id);
+    return (true);
+}

@@ -8,9 +8,9 @@
 # define STR(x)         STRINGIFY(x)
 
 # define DEFAULT_MAP_SIZE   10
-# define DEFAULT_AI_LEVEL   2
 # define MIN_MAP_SIZE       5
 # define MAX_MAP_SIZE       25
+# define DEFAULT_AI_LEVEL   3
 # define MIN_AI_LEVEL       1
 # define MAX_AI_LEVEL       3
 
