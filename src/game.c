@@ -1,3 +1,4 @@
+#include "ai.h"
 #include "display.h"
 #include "ipc.h"
 #include "lem-ipc.h"
@@ -68,8 +69,13 @@ int game_loop(t_data *data, bool show_display, t_pos *pos) {
             break ;
         }
 
-        if (show_display) ft_memcpy(snapshot,  board_get(data), size);
+        if (show_display)
+            ft_memcpy(snapshot,  board_get(data), size);
         sem_unlock(data->sem_id);
+
+        if (!data->spectator && !data->human)
+            ai_move(data, pos);
+
         if (show_display) {
             display_render(data, snapshot, pos);
             int ch = getch();
