@@ -21,8 +21,10 @@ static void ai_chase_move(t_data *data, t_pos *pos) {
     me[0] = *pos;
 
     t_bfs_result    res = ai_bfs_multi(data, me, 1);
-    if (res.found)
-        player_move(data, pos, res.dx, res.dy);
+    if (res.found) {
+        t_pos   target = ai_step_to(data, *pos, res.target);
+        player_move(data, pos, target.x, target.y);
+    }
 }
 
 void    ai_move(t_data *data, t_pos *pos) {

@@ -7,12 +7,11 @@
 
 typedef struct  s_bfs_result {
     bool        found;
-    int         dx;
-    int         dy;
     t_pos       target;
 }               t_bfs_result;
 
 void            ai_move(t_data *data, t_pos *pos);
 t_bfs_result    ai_bfs_multi(t_data *data, t_pos *sources, int count);
+t_pos           ai_step_to(t_data *data, t_pos src, t_pos dest);
 
 #endif
