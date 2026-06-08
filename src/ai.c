@@ -17,23 +17,12 @@ static void ai_random_move(t_data *data, t_pos *pos) {
 }
 
 static void ai_chase_move(t_data *data, t_pos *pos) {
-    t_pos   nearest;
-    int     r = rand() % 2;
+    t_pos   me[1];
+    me[0] = *pos;
 
-    sem_lock(data->sem_id);
-    nearest = player_nearest_get(data, pos);
-    if (nearest.x != 0 || nearest.y != 0) {
-        nearest.x = nearest.x - pos->x;
-        nearest.y = nearest.y - pos->y;
-        if (nearest.x > 0) nearest.x = 1;
-        else if (nearest.x < 0) nearest.x = -1;
-        if (nearest.y > 0) nearest.y = 1;
-        else if (nearest.y < 0) nearest.y = -1;
-    }
-    sem_unlock(data->sem_id);
-
-    if ((r == 0 || nearest.y == 0) && nearest.x != 0) player_move(data, pos, nearest.x, 0);
-    else player_move(data, pos, 0, nearest.y);
+    t_bfs_result    res = ai_bfs_multi(data, me, 1);
+    if (res.found)
+        player_move(data, pos, res.dx, res.dy);
 }
 
 void    ai_move(t_data *data, t_pos *pos) {
@@ -41,9 +30,11 @@ void    ai_move(t_data *data, t_pos *pos) {
 
     frame++;
     if (frame == FPS) {
+        sem_lock(data->sem_id);
         if (data->ai == 1) ai_random_move(data, pos);
         if (data->ai == 2) ai_chase_move(data, pos);
         //add msg
+        sem_unlock(data->sem_id);
         frame = 0;
     }
 }

@@ -10,6 +10,5 @@ int     player_place(t_data *data, t_pos *pos);
 void    player_join(t_data *data, t_pos pos);
 void    player_quit(t_data *data);
 bool    player_move(t_data *data, t_pos *pos, int dx, int dy);
-t_pos   player_nearest_get(t_data *data, t_pos *pos);
 
 #endif

@@ -53,47 +53,13 @@ bool    player_move(t_data *data, t_pos *pos, int dx, int dy) {
     if (nx < 0 || nx >= (int)data->map_size || ny < 0 || ny >= (int)data->map_size)
         return (false);
 
-    sem_lock(data->sem_id);
     board = board_get(data);
-    if (board[ny * data->map_size + nx] != TILE_EMPTY) {
-        sem_unlock(data->sem_id);
+    if (board[ny * data->map_size + nx] != TILE_EMPTY)
         return (false);
-    }
 
     board[pos->y * data->map_size + pos->x] = TILE_EMPTY;
     board[ny * data->map_size + nx] = data->team;
     pos->x = nx;
     pos->y = ny;
-    sem_unlock(data->sem_id);
     return (true);
-}
-
-t_pos   player_nearest_get(t_data *data, t_pos *pos) {
-    unsigned char   *board;
-    t_pos           nearest = {0};
-    unsigned int    y;
-    unsigned int    x;
-    int             dist;
-    int             best = -1;
-    unsigned char   tile;
-
-    board = board_get(data);
-    y = 0;
-    while (y < data->map_size) {
-        x = 0;
-        while (x < data->map_size) {
-            tile = board[y * data->map_size + x];
-            if (tile != TILE_EMPTY && tile != TILE_WALL && tile != data->team) {
-                dist = abs((int)x - pos->x) + abs((int)y - pos->y);
-                if (best == -1 || dist < best) {
-                    best = dist;
-                    nearest.x = x;
-                    nearest.y = y;
-                }
-            }
-            x++;
-        }
-        y++;
-    }
-    return (nearest);
 }

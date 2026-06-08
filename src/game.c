@@ -81,10 +81,12 @@ int game_loop(t_data *data, bool show_display, t_pos *pos) {
             int ch = getch();
             if (ch == 'q' || ch == 'Q') break ;
             else if (data->human) {
+                sem_lock(data->sem_id);
                 if (ch == 'w' || ch == 'W') player_move(data, pos, 0, -1);
                 if (ch == 'a' || ch == 'A') player_move(data, pos, -1, 0);
                 if (ch == 's' || ch == 'S') player_move(data, pos, 0, 1);
                 if (ch == 'd' || ch == 'D') player_move(data, pos, 1, 0);
+                sem_unlock(data->sem_id);
             }
         }
 
