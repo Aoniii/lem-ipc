@@ -10,7 +10,6 @@
 #include "ipc.h"
 #include <ncurses.h>
 #include <stdlib.h>
-#include <unistd.h>
 
 int game_start(t_data *data) {
     t_pos           pos = {0};
@@ -47,6 +46,7 @@ int game_start(t_data *data) {
 }
 
 int game_loop(t_data *data, bool show_display, t_pos *pos) {
+    static int      frame = 0;
     t_shm_header    *header = (t_shm_header *)data->shm_ptr;
 	int             running = 1;
     unsigned int    size = data->map_size * data->map_size;
@@ -76,17 +76,31 @@ int game_loop(t_data *data, bool show_display, t_pos *pos) {
 
         if (!data->spectator) {
             sem_lock(data->sem_id);
-            if (is_circled(data, pos)) {
-                board_set_empty(data, *pos); 
-                data->is_alive = false;
-                if (is_game_over(data))
-                    header->running = false;
-                sem_unlock(data->sem_id);
-                break ;
+            if (frame == FPS) {
+                if (is_circled(data, pos)) {
+                    board_set_empty(data, *pos); 
+                    data->is_alive = false;
+                    if (is_game_over(data))
+                        header->running = false;
+                    sem_unlock(data->sem_id);
+                    break ;
+                }
+                if (!data->human)
+                    ai_move(data, pos);
+                frame = 0;
             }
-            if (!data->human) {
-                ai_move(data, pos);
-            } else {
+            frame++;
+
+            if (data->human && ft_strchr("wWaAsSdD", ch) != 0) {
+                if (is_circled(data, pos)) {
+                    board_set_empty(data, *pos); 
+                    data->is_alive = false;
+                    if (is_game_over(data))
+                        header->running = false;
+                    sem_unlock(data->sem_id);
+                    break ;
+                }
+
                 if (ch == 'w' || ch == 'W') player_move(data, pos, 0, -1);
                 if (ch == 'a' || ch == 'A') player_move(data, pos, -1, 0);
                 if (ch == 's' || ch == 'S') player_move(data, pos, 0, 1);

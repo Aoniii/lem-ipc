@@ -60,13 +60,7 @@ static void ai_coordination_move(t_data *data, t_pos *pos) {
 }
 
 void    ai_move(t_data *data, t_pos *pos) {
-    static int      frame = 0;
-
-    frame++;
-    if (frame == FPS) {
-        if (data->ai == 1) ai_random_move(data, pos);
-        else if (data->ai == 2) ai_chase_move(data, pos);
-        else if (data->ai == 3) ai_coordination_move(data, pos);
-        frame = 0;
-    }
+    if (data->ai == 1) ai_random_move(data, pos);
+    else if (data->ai == 2) ai_chase_move(data, pos);
+    else if (data->ai == 3) ai_coordination_move(data, pos);
 }
