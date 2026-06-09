@@ -59,6 +59,7 @@ bool    player_move(t_data *data, t_pos *pos, int dx, int dy) {
 
     board[pos->y * data->map_size + pos->x] = TILE_EMPTY;
     board[ny * data->map_size + nx] = data->team;
+    log_push(data, "[>] Team %d moved from (%d, %d) to (%d, %d)", data->team, pos->x, pos->y, nx, ny);
     pos->x = nx;
     pos->y = ny;
     return (true);

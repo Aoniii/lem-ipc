@@ -67,7 +67,6 @@ void    ai_move(t_data *data, t_pos *pos) {
         if (data->ai == 1) ai_random_move(data, pos);
         else if (data->ai == 2) ai_chase_move(data, pos);
         else if (data->ai == 3) ai_coordination_move(data, pos);
-        //add msg
         frame = 0;
     }
 }
