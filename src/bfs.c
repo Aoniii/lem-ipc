@@ -95,10 +95,34 @@ static t_pos    build_step(int *parent, t_data *data, t_pos src, int end)
 	return (step);
 }
 
+static void	build_dir_order(t_pos src, t_pos dest, int *order) {
+	int ddx;
+	int ddy;
+	int h;
+	int v;
+
+	ddx = dest.x - src.x;
+	ddy = dest.y - src.y;
+	h = (ddx > 0) ? 3 : 2;
+	v = (ddy > 0) ? 1 : 0;
+	if (abs(ddx) >= abs(ddy)) {
+		order[0] = h;
+		order[1] = v;
+		order[2] = (ddy > 0) ? 0 : 1;
+		order[3] = (ddx > 0) ? 2 : 3;
+	} else {
+		order[0] = v;
+		order[1] = h;
+		order[2] = (ddx > 0) ? 2 : 3;
+		order[3] = (ddy > 0) ? 0 : 1;
+	}
+}
+
 t_pos   ai_step_to(t_data *data, t_pos src, t_pos dest) {
 	unsigned char   *board;
 	int             *queue;
 	int             *parent;
+    int             order[4];
 	int             size;
 	int             head;
 	int             tail;
@@ -113,6 +137,7 @@ t_pos   ai_step_to(t_data *data, t_pos src, t_pos dest) {
 	step.y = 0;
     if (abs(src.x - dest.x) + abs(src.y - dest.y) == 1)
 		return (step);
+
 	board = board_get(data);
 	size = data->map_size * data->map_size;
 	queue = malloc(sizeof(int) * size);
@@ -131,7 +156,8 @@ t_pos   ai_step_to(t_data *data, t_pos src, t_pos dest) {
 	cur = src.y * data->map_size + src.x;
 	parent[cur] = cur;
 	queue[tail++] = cur;
-	while (head < tail) {
+    build_dir_order(src, dest, order);
+    while (head < tail) {
 		cur = queue[head++];
 		if (cur != (src.y * (int)data->map_size + src.x)) {
 			int cx = cur % data->map_size;
@@ -145,8 +171,8 @@ t_pos   ai_step_to(t_data *data, t_pos src, t_pos dest) {
 		}
 		i = 0;
 		while (i < 4) {
-			nx = (cur % data->map_size) + g_dx[i];
-			ny = (cur / data->map_size) + g_dy[i];
+			nx = (cur % data->map_size) + g_dx[order[i]];
+			ny = (cur / data->map_size) + g_dy[order[i]];
 			i++;
 			if (nx < 0 || nx >= (int)data->map_size || ny < 0 || ny >= (int)data->map_size)
 				continue ;

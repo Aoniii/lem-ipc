@@ -79,6 +79,8 @@ int game_loop(t_data *data, bool show_display, t_pos *pos) {
             if (is_circled(data, pos)) {
                 board_set_empty(data, *pos); 
                 data->is_alive = false;
+                if (is_game_over(data))
+                    header->running = false;
                 sem_unlock(data->sem_id);
                 break ;
             }

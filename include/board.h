@@ -11,5 +11,6 @@ unsigned int    board_count(t_data *data, unsigned char value);
 void            board_set_empty(t_data *data, t_pos pos);
 int             team_positions(t_data *data, t_pos *out, int max);
 bool            is_circled(t_data *data, t_pos *pos);
+bool            is_game_over(t_data *data);
 
 #endif

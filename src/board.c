@@ -83,3 +83,28 @@ bool    is_circled(t_data *data, t_pos *pos) {
 	return (false);
 }
 
+bool    is_game_over(t_data *data) {
+    unsigned char   *board = board_get(data);
+    unsigned char   tile;
+    unsigned int    i = 0;
+    int             team[MAX_TEAM + 1];
+    int             count = 0;
+
+    while (i <= MAX_TEAM)
+		team[i++] = 0;
+
+    i = 0;
+    while (i < data->map_size * data->map_size) {
+        tile = board[i];
+        if (tile != TILE_EMPTY && tile != TILE_WALL) {
+            if (team[tile] == 0) {
+                team[tile] = 1;
+                count++;
+                if (count >= 2)
+                    return (false);
+            }
+        }
+        i++;
+    }
+    return (true);
+}
