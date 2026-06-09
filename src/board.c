@@ -51,3 +51,35 @@ int team_positions(t_data *data, t_pos *out, int max) {
 	return (n);
 }
 
+bool    is_circled(t_data *data, t_pos *pos) {
+    static const int    dx[8] = {-1, 0, 1, -1, 1, -1, 0, 1};
+	static const int    dy[8] = {-1, -1, -1, 0, 0, 1, 1, 1};
+	unsigned char       *board;
+	unsigned char       tile;
+	int                 counts[MAX_TEAM + 1];
+	int                 nx;
+	int                 ny;
+	int                 i;
+
+	board = board_get(data);
+	i = 0;
+	while (i <= MAX_TEAM)
+		counts[i++] = 0;
+
+    i = 0;
+	while (i < 8) {
+		nx = pos->x + dx[i];
+		ny = pos->y + dy[i];
+		i++;
+		if (nx < 0 || nx >= (int)data->map_size || ny < 0 || ny >= (int)data->map_size)
+			continue ;
+		tile = board[ny * data->map_size + nx];
+		if (tile == TILE_EMPTY || tile == TILE_WALL || tile == data->team)
+			continue ;
+		counts[tile]++;
+		if (counts[tile] >= 2)
+			return (true);
+	}
+	return (false);
+}
+

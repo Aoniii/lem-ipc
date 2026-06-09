@@ -64,12 +64,10 @@ void    ai_move(t_data *data, t_pos *pos) {
 
     frame++;
     if (frame == FPS) {
-        sem_lock(data->sem_id);
         if (data->ai == 1) ai_random_move(data, pos);
         else if (data->ai == 2) ai_chase_move(data, pos);
         else if (data->ai == 3) ai_coordination_move(data, pos);
         //add msg
-        sem_unlock(data->sem_id);
         frame = 0;
     }
 }

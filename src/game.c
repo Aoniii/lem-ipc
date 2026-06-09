@@ -61,6 +61,7 @@ int game_loop(t_data *data, bool show_display, t_pos *pos) {
     }
 
     while (running && data->is_alive && !g_stop) {
+        int ch = getch();
         sem_lock(data->sem_id);
 
         running = header->running;
@@ -73,21 +74,28 @@ int game_loop(t_data *data, bool show_display, t_pos *pos) {
             ft_memcpy(snapshot,  board_get(data), size);
         sem_unlock(data->sem_id);
 
-        if (!data->spectator && !data->human)
-            ai_move(data, pos);
-
-        if (show_display) {
-            display_render(data, snapshot, pos);
-            int ch = getch();
-            if (ch == 'q' || ch == 'Q') break ;
-            else if (data->human) {
-                sem_lock(data->sem_id);
+        if (!data->spectator) {
+            sem_lock(data->sem_id);
+            if (is_circled(data, pos)) {
+                board_set_empty(data, *pos); 
+                data->is_alive = false;
+                sem_unlock(data->sem_id);
+                break ;
+            }
+            if (!data->human) {
+                ai_move(data, pos);
+            } else {
                 if (ch == 'w' || ch == 'W') player_move(data, pos, 0, -1);
                 if (ch == 'a' || ch == 'A') player_move(data, pos, -1, 0);
                 if (ch == 's' || ch == 'S') player_move(data, pos, 0, 1);
                 if (ch == 'd' || ch == 'D') player_move(data, pos, 1, 0);
-                sem_unlock(data->sem_id);
             }
+            sem_unlock(data->sem_id);
+        }
+
+        if (show_display) {
+            display_render(data, snapshot, pos);
+            if (ch == 'q' || ch == 'Q') break ;
         }
 
         usleep(1000000 / FPS);
