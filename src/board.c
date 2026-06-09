@@ -26,3 +26,28 @@ void    board_set_empty(t_data *data, t_pos pos) {
     unsigned char   *board = board_get(data);
     board[pos.y * data->map_size + pos.x] = TILE_EMPTY;
 }
+
+int team_positions(t_data *data, t_pos *out, int max) {
+	unsigned char   *board;
+	unsigned int    x;
+	unsigned int    y;
+	int             n;
+
+	board = board_get(data);
+	n = 0;
+	y = 0;
+	while (y < data->map_size && n < max) {
+		x = 0;
+		while (x < data->map_size && n < max) {
+			if (board[y * data->map_size + x] == data->team) {
+				out[n].x = x;
+				out[n].y = y;
+				n++;
+			}
+			x++;
+		}
+		y++;
+	}
+	return (n);
+}
+
