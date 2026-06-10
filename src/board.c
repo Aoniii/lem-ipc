@@ -110,16 +110,35 @@ bool    is_game_over(t_data *data) {
     return (true);
 }
 
-void    walls_init(t_data *data) {
-    unsigned char   *board = board_get(data);
-    unsigned int    walls = data->map_size * WALL_MULTIPLIER;
-    unsigned int    max = data->map_size * data->map_size;
+void    walls_generator(t_data *data) {
+    static const int    dx[4] = {0, 0, -1, 1};
+	static const int    dy[4] = {-1, 1, 0, 0};
 
-    while (walls != 0) {
-        unsigned int    rdm = rand() % max;
-        if (board[rdm] != TILE_EMPTY)
-            continue ;
-        board[rdm] = TILE_WALL;
-        walls--;
+    unsigned char   *board = board_get(data);
+    int             max = data->map_size * data->map_size;
+    int             free_tile = max * (1 - WALL_RATIO);
+    int             y = rand() % data->map_size;
+    int             x = rand() % data->map_size;
+    int             rdm;
+    bool            new_direction;
+
+    int i = 0;
+    while (i < max)
+        board[i++] = TILE_WALL;
+
+    while (free_tile > 0) {
+        if (board[y * data->map_size + x] == TILE_WALL) {
+            board[y * data->map_size + x] = TILE_EMPTY;
+            free_tile--;
+        }
+        new_direction = false;
+        while (!new_direction) {
+            rdm = rand() % 4;
+            if (x + dx[rdm] < 0 || x + dx[rdm] >= (int)data->map_size || y + dy[rdm] < 0 || y + dy[rdm] >= (int)data->map_size)
+                continue ;
+            x += dx[rdm];
+            y += dy[rdm];
+            new_direction = true;
+        }
     }
 }

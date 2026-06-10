@@ -47,7 +47,7 @@ static int  ipc_create(t_data *data, key_t key) {
 
     ft_memset(data->shm_ptr, 0, size);
     if (data->walls)
-        walls_init(data);
+        walls_generator(data);
 
     header = (t_shm_header *)data->shm_ptr;
     header->map_size = data->map_size;
