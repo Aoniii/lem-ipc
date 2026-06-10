@@ -2,6 +2,7 @@
 #include "ipc.h"
 #include "lem-ipc.h"
 #include <stddef.h>
+#include <stdlib.h>
 
 unsigned char   *board_get(t_data *data) {
     return ((unsigned char *)data->shm_ptr + sizeof(t_shm_header));
@@ -107,4 +108,18 @@ bool    is_game_over(t_data *data) {
         i++;
     }
     return (true);
+}
+
+void    walls_init(t_data *data) {
+    unsigned char   *board = board_get(data);
+    unsigned int    walls = data->map_size * WALL_MULTIPLIER;
+    unsigned int    max = data->map_size * data->map_size;
+
+    while (walls != 0) {
+        unsigned int    rdm = rand() % max;
+        if (board[rdm] != TILE_EMPTY)
+            continue ;
+        board[rdm] = TILE_WALL;
+        walls--;
+    }
 }

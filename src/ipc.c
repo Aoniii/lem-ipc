@@ -1,6 +1,7 @@
 #include "ipc.h"
 #include "lem-ipc.h"
 #include "libft.h"
+#include "board.h"
 #include <errno.h>
 #include <stddef.h>
 #include <sys/ipc.h>
@@ -45,13 +46,15 @@ static int  ipc_create(t_data *data, key_t key) {
         return (-1);
 
     ft_memset(data->shm_ptr, 0, size);
+    if (data->walls)
+        walls_init(data);
+
     header = (t_shm_header *)data->shm_ptr;
     header->map_size = data->map_size;
     header->player_count = 0;
     header->running = 1;
     header->ready = 1;
     data->is_first = true;
-
     return (0);
 }
 
