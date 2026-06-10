@@ -61,6 +61,8 @@ bool    is_circled(t_data *data, t_pos *pos) {
 	int                 nx;
 	int                 ny;
 	int                 i;
+    int                 walls = 0;
+    int                 enemies = 0;
 
 	board = board_get(data);
 	i = 0;
@@ -72,14 +74,25 @@ bool    is_circled(t_data *data, t_pos *pos) {
 		nx = pos->x + dx[i];
 		ny = pos->y + dy[i];
 		i++;
+
 		if (nx < 0 || nx >= (int)data->map_size || ny < 0 || ny >= (int)data->map_size)
 			continue ;
+
 		tile = board[ny * data->map_size + nx];
-		if (tile == TILE_EMPTY || tile == TILE_WALL || tile == data->team)
+		if (tile == TILE_EMPTY || tile == data->team)
 			continue ;
-		counts[tile]++;
-		if (counts[tile] >= 2)
-			return (true);
+
+        if (tile == TILE_WALL) {
+            walls++;
+        } else {
+		    counts[tile]++;
+            enemies++;
+		    if (counts[tile] >= 2)
+			    return (true);
+        }
+
+        if ((walls >= 6 && enemies >= 1) || walls + enemies >= 8)
+            return (true);
 	}
 	return (false);
 }
