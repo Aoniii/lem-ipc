@@ -46,15 +46,17 @@ static int  ipc_create(t_data *data, key_t key) {
         return (-1);
 
     ft_memset(data->shm_ptr, 0, size);
-    if (data->walls)
-        walls_generator(data);
-
     header = (t_shm_header *)data->shm_ptr;
     header->map_size = data->map_size;
     header->player_count = 0;
     header->running = 1;
+    if (data->walls)
+        walls_generator(data);
+
+    __sync_synchronize();
     header->ready = 1;
     data->is_first = true;
+
     return (0);
 }
 

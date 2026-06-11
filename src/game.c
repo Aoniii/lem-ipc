@@ -46,11 +46,11 @@ int game_start(t_data *data) {
 }
 
 int game_loop(t_data *data, bool show_display, t_pos *pos) {
-    static int      frame = 0;
     t_shm_header    *header = (t_shm_header *)data->shm_ptr;
 	int             running = 1;
     unsigned int    size = data->map_size * data->map_size;
     unsigned char   *snapshot = NULL;
+    int             frame = 0;
 
     if (show_display) {
         snapshot = malloc(size);
@@ -61,7 +61,7 @@ int game_loop(t_data *data, bool show_display, t_pos *pos) {
     }
 
     while (running && data->is_alive && !g_stop) {
-        int ch = getch();
+        int ch = (show_display) ? getch() : ERR;
         sem_lock(data->sem_id);
 
         running = header->running;
