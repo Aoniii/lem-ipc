@@ -1,5 +1,6 @@
 #include "lem-ipc.h"
 #include "libft.h"
+#include "replay.h"
 #include "validation.h"
 #include <stdlib.h>
 
@@ -80,7 +81,7 @@ t_validate  validate_replay_file(t_data *data, char **args) {
         return (V_REPLAY_FILE_MISSING);
 
     const char  *file = args[0];
-    char        *ptr = ft_strnstr(file, ".log", ft_strlen(file));
+    char        *ptr = ft_strnstr(file, FILE_EXTENSION, ft_strlen(file));
     if (!ptr || ptr[4] != '\0')
         return (V_REPLAY_FILE_INVALID_EXT);
 

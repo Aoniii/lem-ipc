@@ -38,6 +38,7 @@ typedef struct      s_data {
     void*           shm_ptr;
     bool            is_first;
     bool            is_alive;
+    int             replay_fd;
 }                   t_data;
 
 typedef struct  s_pos {

@@ -1,6 +1,7 @@
 #ifndef IPC_H
 # define IPC_H
 
+# include <linux/limits.h>
 # include <sys/ipc.h>
 # include <sys/sem.h>
 # include <stdbool.h>
@@ -31,6 +32,7 @@ typedef struct      s_shm_header {
     char            logs[LOG_COUNT][LOG_WIDTH];
     int             log_count;
     int             log_head;
+    char            replay_path[PATH_MAX + 128];
     volatile int    ready;
     volatile int    running;
 }                   t_shm_header;
