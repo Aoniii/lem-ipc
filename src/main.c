@@ -8,10 +8,18 @@
 #include <time.h>
 #include <unistd.h>
 
+/**
+ * @brief Application entry point for lem-ipc.
+ * * This function initializes configuration parameters, builds the command-line
+ * options layout array, invokes the argument parsing library, validates operational
+ * constraints, hooks up system signals, and hands off execution control to the 
+ * game loop manager.
+ */
 int main(int argc, char** argv) {
     t_parser_ctx    ctx;
     ctx.err = PARSER_SUCCESS;
 
+    // Documentation details binding for helper output triggers
     t_parser_info   info = {
         .program        = argv[0],
         .usage          = "",
@@ -19,6 +27,7 @@ int main(int argc, char** argv) {
         .footer         = ""
     };
 
+    // Instantiate localized player-profile data tracking defaults
     t_data  data = {
         .map_size = DEFAULT_MAP_SIZE,
         .ai = DEFAULT_AI_LEVEL,
@@ -30,6 +39,7 @@ int main(int argc, char** argv) {
         .team = 0
     };
 
+    // Command-line options mapping scheme interface configurations
     t_option    options[] = {
         {
             .short_opt  = 0,
@@ -93,9 +103,10 @@ int main(int argc, char** argv) {
 			},
 			.help		= "give this help list"
 		},
-        {0}
+        {0} // Array terminator marker requirement
     };
 
+    // 1. Parse command-line positional flags and key-value assignments
     char **args = parser(argc, argv, options, MODE_PERMISSIVE, &ctx);
     if (ctx.err != PARSER_SUCCESS) {
 		error(info.program, &ctx);
@@ -103,20 +114,28 @@ int main(int argc, char** argv) {
 		return (ctx.err == CALLBACK_EXIT ? 0 : 1);
 	}
 
+    // 2. Perform validation logic matching on unmapped remaining arguments (e.g., Team ID)
     t_validate  validate = validate_args(&data, args);
     if (validate != V_SUCCESS) {
         ft_printf("lemipc: error: %s\n", validate_str(validate));
         return (1);
     }
 
+    // 3. Setup system interception hooks (SIGINT, SIGTERM, etc.) for graceful shutdown
     setup_signals();
+
+    // 4. Seed pseudo-random generator uniquely combining PID and calendar clock ticks
     srand(getpid() ^ time(NULL));
 
+    // 5. Execute standard match deployment workflow or route to playback mechanisms
     int ret = 0;
-    if (!data.replay)
+    if (!data.replay) {
         ret = game_start(&data);
-    //TODO: add replay
+    } else {
+        // TODO: add replay log handling system
+    }
 
+    // Release allocated residual arguments pointers array
     cleaner(args);
     return (ret);
 }

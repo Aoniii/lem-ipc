@@ -11,13 +11,9 @@
 
 /**
  * @brief Initializes a new game replay file.
- *
- * This function retrieves the current working directory, ensures a "/replay" 
+ * * This function retrieves the current working directory, ensures a "/replay" 
  * folder exists, and generates a timestamped filename (e.g., game-YYYYMMDD-HHMMSS.log).
  * The absolute path is saved into the shared memory for later use.
- *
- * @param data Pointer to the main data structure containing the SHM header.
- * @return int 0 if the file was successfully created, -1 in case of failure.
  */
 int create_replay_file(t_data *data) {
     t_shm_header    *header;

@@ -11,15 +11,23 @@
 #include <ncurses.h>
 #include <stdlib.h>
 
+/**
+ * @brief Main entry point to initialize, run, and clean up a game session.
+ * * Sets up IPCs, initializes the ncurses graphics if required, handles team
+ * placement logic for players, starts the game loop, and ensures safe memory
+ * and IPC teardown upon exit or crash.
+ */
 int game_start(t_data *data) {
     t_pos           pos = {0};
     bool            show_display = (data->human || data->spectator);
 
+    // 1. Initialize IPC mechanisms (Shared memory, Semaphores, Message queues)
     if (ipc_init(data) != 0) {
         ft_printf("lemipc: error: failed to initialize IPC\n");
         return (1);
     }
 
+    // 2. Initialize display framework if running as human or spectator
     if (show_display) {
         if (display_init(data) != 0) {
             ipc_cleanup(data);
@@ -28,6 +36,7 @@ int game_start(t_data *data) {
         }
     }
 
+    // 3. Connect player to the grid (Spectators skip this step)
     if (!data->spectator) {
         if (player_place(data, &pos) == -1) {
             if (show_display) display_destroy();
@@ -38,20 +47,93 @@ int game_start(t_data *data) {
         player_join(data, pos);
     }
 
+    // 4. Fire up the core loop execution state
     data->is_alive = true;
     int ret = game_loop(data, show_display, &pos);
+
+    // 5. Clean up allocations and context states upon loop break
     if (show_display) display_destroy();
     ipc_cleanup(data);
     return (ret);
 }
 
+/**
+ * @brief Checks if the player is dead, and updates global flags if game over.
+ * Must be executed while holding the semaphore lock.
+ */
+static bool check_death(t_data *data, t_pos *pos, t_shm_header *header) {
+	if (!is_circled(data, pos))
+		return (false);
+
+    // Player is dead: clear tile, update local status, and check for match end
+	board_set_empty(data, *pos);
+	data->is_alive = false;
+	if (is_game_over(data))
+		header->running = false;    // Notify all processes that the match is over
+	return (true);
+}
+
+/**
+ * @brief Processes WASD keystrokes into 2D directional displacement vectors.
+ */
+static void human_move(t_data *data, t_pos *pos, int ch) {
+	if (ch == 'w' || ch == 'W')
+		player_move(data, pos, 0, -1);
+	else if (ch == 'a' || ch == 'A')
+		player_move(data, pos, -1, 0);
+	else if (ch == 's' || ch == 'S')
+		player_move(data, pos, 0, 1);
+	else if (ch == 'd' || ch == 'D')
+		player_move(data, pos, 1, 0);
+}
+
+/**
+ * @brief Thread-safe routine executor handling individual turnaround states.
+ * Wraps actions in semaphore locking blocks to enforce resource synchronization.
+ */
+static bool play_turn(t_data *data, t_pos *pos, int ch, int *frame) {
+	t_shm_header    *header = (t_shm_header *)data->shm_ptr;
+	bool            quit;
+
+	quit = false;
+	sem_lock(data->sem_id); // Lock resource state before assessing conditions
+	if (data->human) {
+        // Human Mode: Read user character inputs
+		if (ft_strchr("wWaAsSdD", ch) != 0) {
+			if (check_death(data, pos, header))
+				quit = true;
+			else
+				human_move(data, pos, ch);
+		}
+	} else {
+        // AI Mode: Execute movement ticks based on standard FPS throttle
+		if (*frame >= FPS) {
+			if (check_death(data, pos, header))
+				quit = true;
+			else
+				ai_move(data, pos);
+			*frame = 0; // Reset frame threshold tracker
+		}
+		(*frame)++;
+	}
+	sem_unlock(data->sem_id);   // Unlock state safely
+	return (quit);
+}
+
+/**
+ * @brief Core heartbeat game loop driving rendering updates and input polling.
+ * * Synchronizes rendering via snapshot double-buffering, updates user/AI turns, 
+ * polls for termination signals (like g_stop or 'q'), and handles graceful 
+ * removal of players from the board upon death or exit.
+ */
 int game_loop(t_data *data, bool show_display, t_pos *pos) {
     t_shm_header    *header = (t_shm_header *)data->shm_ptr;
-	int             running = 1;
     unsigned int    size = data->map_size * data->map_size;
     unsigned char   *snapshot = NULL;
     int             frame = 0;
+    int             ch;
 
+    // Allocate memory for local double-buffering if UI rendering is active
     if (show_display) {
         snapshot = malloc(size);
         if (!snapshot) {
@@ -60,71 +142,49 @@ int game_loop(t_data *data, bool show_display, t_pos *pos) {
         }
     }
 
-    while (running && data->is_alive && !g_stop) {
-        int ch = (show_display) ? getch() : ERR;
-        sem_lock(data->sem_id);
+    // Main execution loop run condition
+    while (data->is_alive && !g_stop) {
+        ch = (show_display) ? getch() : ERR;
 
-        running = header->running;
-        if (!running) {
-            sem_unlock(data->sem_id);
-            break ;
-        }
+		sem_lock(data->sem_id);
+        // Break early if another process declared the game is over
+		if (!header->running) {
+			sem_unlock(data->sem_id);
+			break ;
+		}
 
-        if (show_display)
-            ft_memcpy(snapshot,  board_get(data), size);
-        sem_unlock(data->sem_id);
+        // Take a safe local memory snapshot of the board to reduce lock contention
+		if (show_display)
+			ft_memcpy(snapshot, board_get(data), size);
+		sem_unlock(data->sem_id);
 
-        if (!data->spectator) {
-            sem_lock(data->sem_id);
-            if (frame == FPS) {
-                if (is_circled(data, pos)) {
-                    board_set_empty(data, *pos); 
-                    data->is_alive = false;
-                    if (is_game_over(data))
-                        header->running = false;
-                    sem_unlock(data->sem_id);
-                    break ;
-                }
-                if (!data->human)
-                    ai_move(data, pos);
-                frame = 0;
-            }
-            frame++;
+        // Execute entity movement rules (Human or AI strategy)
+		if (!data->spectator && play_turn(data, pos, ch, &frame))
+			break ;
 
-            if (data->human && ft_strchr("wWaAsSdD", ch) != 0) {
-                if (is_circled(data, pos)) {
-                    board_set_empty(data, *pos); 
-                    data->is_alive = false;
-                    if (is_game_over(data))
-                        header->running = false;
-                    sem_unlock(data->sem_id);
-                    break ;
-                }
+        // Render graphics canvas using the un-locked snapshot array copy
+		if (show_display) {
+			display_render(data, snapshot, pos);
+			if (ch == 'q' || ch == 'Q')
+				break ;
+		}
 
-                if (ch == 'w' || ch == 'W') player_move(data, pos, 0, -1);
-                if (ch == 'a' || ch == 'A') player_move(data, pos, -1, 0);
-                if (ch == 's' || ch == 'S') player_move(data, pos, 0, 1);
-                if (ch == 'd' || ch == 'D') player_move(data, pos, 1, 0);
-            }
-            sem_unlock(data->sem_id);
-        }
-
-        if (show_display) {
-            display_render(data, snapshot, pos);
-            if (ch == 'q' || ch == 'Q') break ;
-        }
-
+        // Frame rate limiter control throttle (usleep)
         usleep(1000000 / FPS);
     }
 
+    // --- CLEANUP EXIT SEQUENCE ---
+    // If player leaves or gets killed, remove them cleanly from the system
     if (!data->spectator) {
         if (data->is_alive) {
             sem_lock(data->sem_id);
-            board_set_empty(data, *pos);
+            board_set_empty(data, *pos);    // Wipe current position slot clear
             sem_unlock(data->sem_id);
         }
-        player_quit(data);
+        player_quit(data);  // Handle strategy logging/de-registration updates
     }
-    if (show_display) free(snapshot);
+
+    if (show_display)
+        free(snapshot);
     return (0);
 }

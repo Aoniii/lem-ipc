@@ -4,27 +4,38 @@
 #include "validation.h"
 #include <stdlib.h>
 
+/**
+ * @brief Authoritative orchestrator for testing input flag integrity constraints.
+ * * Executes sequential validation checkpoints (modes, team boundaries, AI levels,
+ * board constraints, and replay logs) to guarantee that the application configuration 
+ * state is completely safe for system engine execution.
+ */
 t_validate  validate_args(t_data *data, char **args) {
     t_validate  validate;
 
+    // 1. Check for mutually exclusive runtime flags
     validate = validate_mode_conflicts(data);
     if (validate != V_SUCCESS)
         return (validate);
 
+    // 2. Enforce team requirements (Spectators and Replay readers skip this)
     if (!data->spectator && !data->replay) {
         validate = validate_team(data, args);
         if (validate != V_SUCCESS)
             return (validate);
     }
 
+    // 3. Verify AI capabilities match available logic modules
     validate = validate_ai_level(data);
     if (validate != V_SUCCESS)
         return (validate);
 
+    // 4. Validate physical dimensions bounds configurations
     validate = validate_map_size(data);
     if (validate != V_SUCCESS)
         return (validate);
 
+    // 5. Assess the tracking log integrity file if in playback mode
     validate = validate_replay_file(data, args);
     if (validate != V_SUCCESS)
         return (validate);
@@ -32,6 +43,11 @@ t_validate  validate_args(t_data *data, char **args) {
     return (V_SUCCESS);
 }
 
+/**
+ * @brief Validates and extracts the positional Team ID integer argument.
+ * * Uses `strtoul` for robust conversion, checking for empty strings, non-numeric
+ * pollution, overflow vulnerabilities, and explicit authorized limits.
+ */
 t_validate  validate_team(t_data *data, char **args) {
     if (args == NULL || args[0] == NULL)
         return (V_MISSING_TEAM);
@@ -40,29 +56,40 @@ t_validate  validate_team(t_data *data, char **args) {
     char            *endptr = NULL;
 	unsigned int    result = strtoul(value, &endptr, 10);
 
+    // Error if characters remain unparsed (*endptr) or no digits were evaluated entirely
 	if (*endptr != '\0' || endptr == value)
 		return (V_INVALID_TEAM);
 
+    // Boundary check limits enforcement
     if (result < 1 || result > MAX_TEAM)
         return (V_INVALID_TEAM_RANGE);
 
-    data->team = result;
-
+    data->team = result;    // Save verified parameter to runtime profile
     return (V_SUCCESS);
 }
 
+/**
+ * @brief Verifies that the designated AI difficulty level matches authorized rules.
+ */
 t_validate  validate_ai_level(t_data *data) {
     if (data->ai < MIN_AI_LEVEL || data->ai > MAX_AI_LEVEL)
         return (V_INVALID_AI_LEVEL);
     return (V_SUCCESS);
 }
 
+/**
+ * @brief Assures the requested dimension parameters reside inside safe kernel limits.
+ */
 t_validate  validate_map_size(t_data *data) {
     if (data->map_size < MIN_MAP_SIZE || data->map_size > MAX_MAP_SIZE)
         return (V_INVALID_MAP_SIZE);
     return (V_SUCCESS);
 }
 
+/**
+ * @brief Guards against conflicting state execution combinations (Exclusive Or constraints).
+ * Prevent anomalies like initializing an instance as both a Human Controller AND a Spectator.
+ */
 t_validate  validate_mode_conflicts(t_data *data) {
     if (data->spectator && data->replay)
         return (V_CONFLICT_SPECTATOR_REPLAY);
@@ -73,6 +100,10 @@ t_validate  validate_mode_conflicts(t_data *data) {
     return (V_SUCCESS);
 }
 
+/**
+ * @brief Validates file accessibility, system permissions, and naming layout constraints.
+ * Uses `access(..., R_OK)` to verify file readability before starting the replay loop.
+ */
 t_validate  validate_replay_file(t_data *data, char **args) {
     if (!data->replay)
         return (V_SUCCESS);
@@ -82,15 +113,19 @@ t_validate  validate_replay_file(t_data *data, char **args) {
 
     const char  *file = args[0];
     char        *ptr = ft_strnstr(file, FILE_EXTENSION, ft_strlen(file));
-    if (!ptr || ptr[4] != '\0')
+
+    // Ensure the extension exists and terminates the string footprint exactly
+    if (!ptr || ptr[ft_strlen(FILE_EXTENSION)] != '\0')
         return (V_REPLAY_FILE_INVALID_EXT);
 
+    // Low-level POSIX validation: check if the process can read the target path
     if (access(file, R_OK) != 0)
         return (V_REPLAY_FILE_UNREADABLE);
 
     return (V_SUCCESS);
 }
 
+// Global static read-only error messaging lookup conversion map
 static const char   *validate_msg[] = {
     [V_SUCCESS]                     = "success",
     [V_MISSING_TEAM]                = "team number is required",
@@ -107,6 +142,9 @@ static const char   *validate_msg[] = {
     [V_UNEXPECTED_ARGS]             = "unexpected extra arguments",
 };
 
+/**
+ * @brief Converts internal evaluation enumeration flags into user-facing text strings.
+ */
 const char  *validate_str(t_validate err) {
     return (validate_msg[err]);
 }
