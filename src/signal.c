@@ -12,14 +12,13 @@ volatile sig_atomic_t   g_stop = 0;
  */
 static void handle_signal(int sig) {
     (void)sig;
-    g_stop = 1; // Atomic state transition assignment
+    g_stop = 1;
 }
 
 /**
- * @brief Configures and arms POSIX signal interception handlers for the process.
- * * Uses `sigaction` instead of the older `signal` function to guarantee 
- * reliable, non-destructive behavior across different UNIX platforms.
- * Registers hooks for both SIGINT (Ctrl+C) and SIGTERM (generic kill).
+ * @brief Signal handler: sets the global stop flag.
+ * Keeps the handler minimal (only an async-signal-safe write) — the main
+ * loop sees the flag and exits cleanly.
  */
 void    setup_signals(void) {
     struct sigaction    sa;
@@ -33,7 +32,6 @@ void    setup_signals(void) {
     // Explicitly zero out flags to enforce standard blocking system-call behavior
     sa.sa_flags = 0;
 
-    // Bind interception structures to the OS kernel listener
     sigaction(SIGINT, &sa, NULL);   // Catch terminal interrupt command (Ctrl+C)
     sigaction(SIGTERM, &sa, NULL);  // Catch termination environment requests
 }

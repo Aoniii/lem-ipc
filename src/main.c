@@ -8,18 +8,11 @@
 #include <time.h>
 #include <unistd.h>
 
-/**
- * @brief Application entry point for lem-ipc.
- * * This function initializes configuration parameters, builds the command-line
- * options layout array, invokes the argument parsing library, validates operational
- * constraints, hooks up system signals, and hands off execution control to the 
- * game loop manager.
- */
 int main(int argc, char** argv) {
     t_parser_ctx    ctx;
     ctx.err = PARSER_SUCCESS;
 
-    // Documentation details binding for helper output triggers
+    // Help text shown by --help
     t_parser_info   info = {
         .program        = argv[0],
         .usage          = "",
@@ -27,7 +20,7 @@ int main(int argc, char** argv) {
         .footer         = ""
     };
 
-    // Instantiate localized player-profile data tracking defaults
+    // Default configuration
     t_data  data = {
         .map_size = DEFAULT_MAP_SIZE,
         .ai = DEFAULT_AI_LEVEL,
@@ -39,7 +32,7 @@ int main(int argc, char** argv) {
         .team = 0
     };
 
-    // Command-line options mapping scheme interface configurations
+    // CLI options
     t_option    options[] = {
         {
             .short_opt  = 0,
@@ -124,10 +117,10 @@ int main(int argc, char** argv) {
     // 3. Setup system interception hooks (SIGINT, SIGTERM, etc.) for graceful shutdown
     setup_signals();
 
-    // 4. Seed pseudo-random generator uniquely combining PID and calendar clock ticks
+    // 4. Seed RNG with PID + time so concurrent players differ
     srand(getpid() ^ time(NULL));
 
-    // 5. Execute standard match deployment workflow or route to playback mechanisms
+    // 5. Normal game, or replay mode
     int ret = 0;
     if (!data.replay) {
         ret = game_start(&data);
@@ -135,7 +128,7 @@ int main(int argc, char** argv) {
         // TODO: add replay log handling system
     }
 
-    // Release allocated residual arguments pointers array
+    // Free the parsed args
     cleaner(args);
     return (ret);
 }

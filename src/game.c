@@ -88,8 +88,7 @@ static void human_move(t_data *data, t_pos *pos, int ch) {
 }
 
 /**
- * @brief Thread-safe routine executor handling individual turnaround states.
- * Wraps actions in semaphore locking blocks to enforce resource synchronization.
+ * @brief Plays one turn for this process (movement or death) under the lock.
  */
 static bool play_turn(t_data *data, t_pos *pos, int ch, int *frame) {
 	t_shm_header    *header = (t_shm_header *)data->shm_ptr;
@@ -121,10 +120,7 @@ static bool play_turn(t_data *data, t_pos *pos, int ch, int *frame) {
 }
 
 /**
- * @brief Core heartbeat game loop driving rendering updates and input polling.
- * * Synchronizes rendering via snapshot double-buffering, updates user/AI turns, 
- * polls for termination signals (like g_stop or 'q'), and handles graceful 
- * removal of players from the board upon death or exit.
+ * @brief Main game loop: snapshot, play a turn, render, repeat.
  */
 int game_loop(t_data *data, bool show_display, t_pos *pos) {
     t_shm_header    *header = (t_shm_header *)data->shm_ptr;
@@ -162,7 +158,7 @@ int game_loop(t_data *data, bool show_display, t_pos *pos) {
 		if (!data->spectator && play_turn(data, pos, ch, &frame))
 			break ;
 
-        // Render graphics canvas using the un-locked snapshot array copy
+        // Render from the local snapshot (no lock held)
 		if (show_display) {
 			display_render(data, snapshot, pos);
 			if (ch == 'q' || ch == 'Q')
@@ -178,10 +174,10 @@ int game_loop(t_data *data, bool show_display, t_pos *pos) {
     if (!data->spectator) {
         if (data->is_alive) {
             sem_lock(data->sem_id);
-            board_set_empty(data, *pos);    // Wipe current position slot clear
+            board_set_empty(data, *pos);    // Clear my tile
             sem_unlock(data->sem_id);
         }
-        player_quit(data);  // Handle strategy logging/de-registration updates
+        player_quit(data);  // Log the exit (player_count is decremented in ipc_cleanup)
     }
 
     if (show_display)

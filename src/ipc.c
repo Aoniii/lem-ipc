@@ -12,9 +12,9 @@
 #include <unistd.h>
 
 /**
- * @brief Creates a persistent file on disk to be used as a token generator reference.
- * * Standard System V IPC relies on `ftok`, which requires an existing pathname.
- * This function guarantees the file's existence with defined safe creation permissions.
+ * @brief Creates the token file required by ftok().
+ * ftok() needs an existing pathname to generate the IPC key, so we
+ * guarantee the file exists before calling it.
  */
 static int  create_ipc_file(void) {
     int fd = open(IPC_PATH, O_CREAT | O_RDONLY, IPC_PERMS);
@@ -24,30 +24,30 @@ static int  create_ipc_file(void) {
 }
 
 /**
- * @brief Handles the initial generation and setup of all shared IPC primitives.
- * * Executed exclusively by the first player process entering the game.
- * Performs exclusive segment creation (`IPC_EXCL`), configures semaphores, 
- * allocates message queues, zeroes out the grid block, and initializes metadata.
+ * @brief Creates and initializes all IPC resources (first player only).
+ * Exclusively creates the SHM, semaphore and message queue, zeroes the
+ * board, writes the header metadata, then sets ready = 1 last so joiners
+ * only read once everything is initialized.
  */
 static int  ipc_create(t_data *data, key_t key) {
     t_shm_header    *header;
     size_t          size = sizeof(t_shm_header) + data->map_size * data->map_size;
 
-    // Allocate Shared Memory with exclusive flags
+    // Create the SHM segment (fails if it already exists)
     data->shm_id = shmget(key, size, IPC_CREAT | IPC_EXCL | IPC_PERMS);
     if (data->shm_id == -1) {
         if (errno == EEXIST)
-            return (1); // Resource already created by an alternate process
+            return (1); // already created by another process
         return (-1);
     }
 
-    // Initialize the associated semaphore array structure
+    // Set up the semaphore
     if (sem_setup(key, &data->sem_id, &data->is_first) == -1) {
         shmctl(data->shm_id, IPC_RMID, NULL);
         return (-1);
     }
 
-    // Allocate the team communication message queue
+    // Create the message queue
     data->msg_id = msgget(key, IPC_CREAT | IPC_EXCL | IPC_PERMS);
     if (data->msg_id == -1) {
         shmctl(data->shm_id, IPC_RMID, NULL);
@@ -55,7 +55,7 @@ static int  ipc_create(t_data *data, key_t key) {
         return (-1);
     }
 
-    // Map the shared memory segment into the local process address workspace
+    // Attach the SHM to our address space
     data->shm_ptr = shmat(data->shm_id, NULL, 0);
     if (data->shm_ptr == (void *)-1)
         return (-1);
@@ -67,22 +67,22 @@ static int  ipc_create(t_data *data, key_t key) {
     header->player_count = 0;
     header->running = 1;
 
-    // Call the procedural wall generator for custom environments if requested
+    // Generate walls if --walls was set
     if (data->walls)
         walls_generator(data);
 
-    // Enforce an explicit hardware-level memory barrier execution block
+    // Memory barrier: ensure all writes above are visible before ready = 1
     __sync_synchronize();
 
-    header->ready = 1;  // Atomic toggle notification flag for peers
+    header->ready = 1;  // signal joiners that init is done
     data->is_first = true;
     return (0);
 }
 
 /**
- * @brief Safety polling loop that prevents race conditions during startup.
- * Prevents joining processes from reading or writing data inside the shared
- * segment until the master creator process has fully finished memory zeroing.
+ * @brief Waits until the creator has finished initializing the SHM.
+ * Joining processes spin on the ready flag before reading map_size,
+ * so they never read uninitialized data.
  */
 static int  shm_wait_ready(t_shm_header *header) {
     int retry = 0;
@@ -90,22 +90,22 @@ static int  shm_wait_ready(t_shm_header *header) {
     while (retry < SHM_MAX_RETRY) {
         if (header->ready == 1)
             return (0);
-        usleep(1000);   // Back off execution context briefly to preserve CPU overhead
+        usleep(1000);   // brief sleep to avoid busy-spinning
         retry++;
     }
     return (-1);
 }
 
 /**
- * @brief Connects subsequent joining processes to existing game instances.
- * * Locates active shared memory segments, semaphores, and message queue IDs 
- * without modifying current state profiles. Validates configuration flags.
+ * @brief Attaches a joining process to existing IPC resources.
+ * Looks up the SHM, semaphore and message queue without modifying them,
+ * then reads the board configuration from the header.
  */
 static int  ipc_attach(t_data *data, key_t key) {
     t_shm_header    *header;
     bool            creator;
 
-    // Attach to the current structural identifiers
+    // Look up the existing SHM id
     data->shm_id = shmget(key, 0, IPC_PERMS);
     if (data->shm_id == -1)
         return (-1);
@@ -121,21 +121,21 @@ static int  ipc_attach(t_data *data, key_t key) {
     if (data->shm_ptr == (void *) -1)
         return (-1);
 
-    // Block process execution context until the initialization barrier clears
+    // Wait until the creator finished initializing
     header = (t_shm_header *)data->shm_ptr;
     if (shm_wait_ready(header) == -1)
         return (-1);
 
-    // Import authoritative board configuration details from the master controller
+    // Read the map size set by the creator
     data->map_size = header->map_size;
     data->is_first = false;
     return (0);
 }
 
 /**
- * @brief General routing manager responsible for initializing the system context.
- * Guarantees the token file layout on disk, triggers initialization logic, and
- * transparently switches to secondary attachment tracking if a game is already running.
+ * @brief Sets up the IPC layer for this process.
+ * Ensures the token file exists, tries to create the resources as the
+ * first player, and falls back to attaching if a game already exists.
  */
 int ipc_init(t_data *data) {
     key_t   key;
@@ -146,19 +146,18 @@ int ipc_init(t_data *data) {
     if (key == -1)
         return (-1);
 
-    // Attempt to create the match environment as the master process
+    // Try to create as the first player
     int ret = ipc_create(data, key);
-    if (ret == 1)   // EEXIST catch trigger: segment already exists, route to attachment instead
+    if (ret == 1)   // already exists -> attach instead
         return (ipc_attach(data, key));
 
     return (ret);
 }
 
 /**
- * @brief Handles detaching and conditional destruction of IPC channels.
- * * Decrements player counters safely using semaphores. If the leaving agent is
- * detected as the final remaining entity on the board, deletes the structural
- * definitions from the OS Kernel entirely and removes the file from disk.
+ * @brief Detaches from the IPC, and destroys it if this is the last player.
+ * Decrements the shared player count under the semaphore. The last one
+ * out removes the SHM, semaphore, message queue and token file.
  */
 void    ipc_cleanup(t_data *data) {
     t_shm_header    *header;
@@ -170,21 +169,20 @@ void    ipc_cleanup(t_data *data) {
     header = (t_shm_header *)data->shm_ptr;
     last = false;
 
-    // Thread-safe update of the shared global player tracking register
+    // Decrement the shared player count
     sem_lock(data->sem_id);
     if (!data->spectator && header->player_count > 0) header->player_count--;
     if (header->player_count == 0) {
         header->running = 0;
-        last = true;    // Flag identifying that this process must perform final garbage collection
+        last = true;    // I'm the last one, I clean up
     }
     sem_unlock(data->sem_id);
 
-    // Detach shared space from current virtual mapping context
+    // Detach from the SHM
     shmdt(data->shm_ptr);
 
-    // Core Kernel garbage collector cleanup execution block
     if (last) {
-        shmctl(data->shm_id, IPC_RMID, NULL);   // Wipe Shared Memory
+        shmctl(data->shm_id, IPC_RMID, NULL);   // Remove the SHM
         semctl(data->sem_id, 0, IPC_RMID);      // Wipe Semaphore Array
         msgctl(data->msg_id, IPC_RMID, NULL);   // Wipe Message Queue
         unlink(IPC_PATH);                       // Wipe identification link file

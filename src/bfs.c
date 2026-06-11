@@ -123,9 +123,9 @@ static t_pos    build_step(int *parent, t_data *data, t_pos src, int end)
 }
 
 /**
- * @brief Determines the optimal ordering of directions to optimize BFS exploration.
- * * Prioritizes movement indices based on the general direction of the destination
- * to make the BFS find the path faster and handle dead-ends gracefully.
+ * @brief Orders the 4 directions so the dominant axis is explored first.
+ * When several shortest paths exist, this makes the BFS pick the one that
+ * reduces the larger gap first, giving more natural-looking movement.
  */
 static void build_dir_order(t_pos src, t_pos dest, int *order) {
 	int ddx;

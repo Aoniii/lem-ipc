@@ -5,10 +5,7 @@
 #include <stdlib.h>
 
 /**
- * @brief Authoritative orchestrator for testing input flag integrity constraints.
- * * Executes sequential validation checkpoints (modes, team boundaries, AI levels,
- * board constraints, and replay logs) to guarantee that the application configuration 
- * state is completely safe for system engine execution.
+ * @brief Parses and validates the positional team argument.
  */
 t_validate  validate_args(t_data *data, char **args) {
     t_validate  validate;
@@ -78,7 +75,7 @@ t_validate  validate_ai_level(t_data *data) {
 }
 
 /**
- * @brief Assures the requested dimension parameters reside inside safe kernel limits.
+ * @brief Checks the map size is within MIN_MAP_SIZE and MAX_MAP_SIZE.
  */
 t_validate  validate_map_size(t_data *data) {
     if (data->map_size < MIN_MAP_SIZE || data->map_size > MAX_MAP_SIZE)
@@ -87,8 +84,7 @@ t_validate  validate_map_size(t_data *data) {
 }
 
 /**
- * @brief Guards against conflicting state execution combinations (Exclusive Or constraints).
- * Prevent anomalies like initializing an instance as both a Human Controller AND a Spectator.
+ * @brief Rejects mutually exclusive mode flags.
  */
 t_validate  validate_mode_conflicts(t_data *data) {
     if (data->spectator && data->replay)
@@ -118,14 +114,14 @@ t_validate  validate_replay_file(t_data *data, char **args) {
     if (!ptr || ptr[ft_strlen(FILE_EXTENSION)] != '\0')
         return (V_REPLAY_FILE_INVALID_EXT);
 
-    // Low-level POSIX validation: check if the process can read the target path
+    // Check the file is readable
     if (access(file, R_OK) != 0)
         return (V_REPLAY_FILE_UNREADABLE);
 
     return (V_SUCCESS);
 }
 
-// Global static read-only error messaging lookup conversion map
+// Error code -> message
 static const char   *validate_msg[] = {
     [V_SUCCESS]                     = "success",
     [V_MISSING_TEAM]                = "team number is required",

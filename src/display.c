@@ -11,7 +11,7 @@ static const int    g_colors[6] = {
 };
 
 /**
- * @brief Pre-initializes dynamic dynamic color pairs for ncurses.
+ * @brief Pre-initializes color pairs for ncurses.
  * * Phase 1: Registers the first 6 teams with identical foreground/background 
  * colors (solid blocks).
  * * Phase 2: Generates up to 15 unique combinations of foreground/background 
@@ -124,11 +124,8 @@ static int blink_on(void) {
 }
 
 /**
- * @brief Renders the entire game map board buffer layout into the terminal.
- * * Converts the 1D map buffer layout into a centered 2D grid display. Cells are 
- * doubled horizontally (width x 2) to correct terminal character aspect ratio distortion.
- * Active players are rendered as filled half-block UTF-8 shapes, blinking if they 
- * correspond to the localized controller's entity tracking pointer.
+ * @brief Draws the board centered in the frame. Cells are 2 chars wide 
+ * so they look square. The local player blinks.
  */
 static void draw_map(t_data *data, unsigned char *snapshot, t_pos *pos) {
     int offset_x = 1 + MAX_MAP_SIZE - data->map_size;
@@ -167,9 +164,7 @@ static void draw_map(t_data *data, unsigned char *snapshot, t_pos *pos) {
 }
 
 /**
- * @brief Unwraps and displays active global IPC strings from the circular logging structure.
- * * Accesses the ring-buffer array using safe modulo indexing mathematics to fetch
- * chronological strings backwards from the sliding logs head tracker.
+ * @brief Displays the shared ring-buffer logs, oldest to newest.
  */
 static void draw_logs(t_data *data, unsigned int start_y) {
     t_shm_header    *header = (t_shm_header *)data->shm_ptr;
@@ -184,7 +179,7 @@ static void draw_logs(t_data *data, unsigned int start_y) {
 }
 
 /**
- * @brief Renders individual contextual team indicators or spectator notification text.
+ * @brief Shows the player's team (or spectator status).
  */
 static void draw_team_info(t_data *data, unsigned int start_y) {
     if (data->spectator) {
@@ -209,9 +204,7 @@ static void draw_controls(t_data *data, unsigned int start_y) {
 }
 
 /**
- * @brief Consolidated core render sequence runner.
- * Clears old artifacts, recalculates framing, applies layers, and pushes everything 
- * to the terminal screen canvas at once.
+ * @brief Draws one full frame: board, info, controls, logs.
  */
 void    display_render(t_data *data, unsigned char *snapshot, t_pos *pos) {
     clear();

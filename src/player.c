@@ -66,10 +66,8 @@ void    player_quit(t_data *data) {
 }
 
 /**
- * @brief Updates a player's physical coordinates inside the shared matrix space.
- * * Validates map boundary limits, enforces solid collision barriers (walls or other players),
- * clears the previous position footprint, registers the new team tile ownership status,
- * and pushes the telemetry log updates.
+ * @brief Moves the player one tile if the target is free: clears the old tile,
+ * claims the new one, logs the move.
  */
 bool    player_move(t_data *data, t_pos *pos, int dx, int dy) {
     unsigned char   *board;
@@ -85,7 +83,7 @@ bool    player_move(t_data *data, t_pos *pos, int dx, int dy) {
     if (board[ny * data->map_size + nx] != TILE_EMPTY)
         return (false);
 
-    // 3. Commit atomic movement update step
+    // 3. Move: clear old tile, claim new one.
     board[pos->y * data->map_size + pos->x] = TILE_EMPTY;   // Clear old position
     board[ny * data->map_size + nx] = data->team;           // Claim new position
 
