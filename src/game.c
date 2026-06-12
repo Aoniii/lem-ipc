@@ -8,6 +8,7 @@
 #include "board.h"
 #include "game.h"
 #include "ipc.h"
+#include "replay.h"
 #include <ncurses.h>
 #include <stdlib.h>
 
@@ -27,7 +28,20 @@ int game_start(t_data *data) {
         return (1);
     }
 
-    // 2. Initialize display framework if running as human or spectator
+    // 2. Initialize replay
+    if (data->is_first) {
+        if (create_replay_file(data) == -1) {
+            ft_printf("lemipc: error: failed to create replay file\n");
+            return (1);
+        }
+    }
+    data->replay_fd = replay_open(data, data->is_first);
+    if (data->replay_fd == -1) {
+        ft_printf("lemipc: error: failed to open replay file\n");
+        return (1);
+    }
+
+    // 3. Initialize display framework if running as human or spectator
     if (show_display) {
         if (display_init(data) != 0) {
             ipc_cleanup(data);
@@ -36,7 +50,7 @@ int game_start(t_data *data) {
         }
     }
 
-    // 3. Connect player to the grid (Spectators skip this step)
+    // 4. Connect player to the grid (Spectators skip this step)
     if (!data->spectator) {
         if (player_place(data, &pos) == -1) {
             if (show_display) display_destroy();
@@ -47,11 +61,11 @@ int game_start(t_data *data) {
         player_join(data, pos);
     }
 
-    // 4. Fire up the core loop execution state
+    // 5. Fire up the core loop execution state
     data->is_alive = true;
     int ret = game_loop(data, show_display, &pos);
 
-    // 5. Clean up allocations and context states upon loop break
+    // 6. Clean up allocations and context states upon loop break
     if (show_display) display_destroy();
     ipc_cleanup(data);
     return (ret);
