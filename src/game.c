@@ -28,13 +28,7 @@ int game_start(t_data *data) {
         return (1);
     }
 
-    // 2. Initialize replay
-    if (data->is_first) {
-        if (create_replay_file(data) == -1) {
-            ft_printf("lemipc: error: failed to create replay file\n");
-            return (1);
-        }
-    }
+    // 2. Connect player to the replay file
     data->replay_fd = replay_open(data, data->is_first);
     if (data->replay_fd == -1) {
         ft_printf("lemipc: error: failed to open replay file\n");
@@ -197,4 +191,17 @@ int game_loop(t_data *data, bool show_display, t_pos *pos) {
     if (show_display)
         free(snapshot);
     return (0);
+}
+
+/**
+ * @brief Initializes the shared game content (first player only).
+ * Generates walls if requested, records the start time, and creates the
+ * replay file. Called before ready = 1 so joiners see a complete board.
+ */
+int game_shm_init(t_data *data) {
+	if (data->walls)
+		walls_generator(data);
+	if (create_replay_file(data) == -1)
+		return (-1);
+	return (0);
 }

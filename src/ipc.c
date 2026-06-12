@@ -1,7 +1,9 @@
 #include "ipc.h"
+#include "game.h"
 #include "lem-ipc.h"
 #include "libft.h"
 #include "board.h"
+#include "replay.h"
 #include <errno.h>
 #include <stddef.h>
 #include <sys/ipc.h>
@@ -67,9 +69,14 @@ static int  ipc_create(t_data *data, key_t key) {
     header->player_count = 0;
     header->running = 1;
 
-    // Generate walls if --walls was set
-    if (data->walls)
-        walls_generator(data);
+    // Initialize walls and replay
+    if (game_shm_init(data) == -1) {
+        shmdt(data->shm_ptr);
+        shmctl(data->shm_id, IPC_RMID, NULL);
+        semctl(data->sem_id, 0, IPC_RMID);
+        msgctl(data->msg_id, IPC_RMID, NULL);
+        return (-1);
+    }
 
     // Memory barrier: ensure all writes above are visible before ready = 1
     __sync_synchronize();
