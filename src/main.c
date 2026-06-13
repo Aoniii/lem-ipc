@@ -1,5 +1,6 @@
 #include "lem-ipc.h"
 #include "parser.h"
+#include "replay.h"
 #include "validation.h"
 #include "print.h"
 #include "game.h"
@@ -125,7 +126,7 @@ int main(int argc, char** argv) {
     if (!data.replay) {
         ret = game_start(&data);
     } else {
-        // TODO: add replay log handling system
+        ret = replay_start(args[0]);
     }
 
     // Free the parsed args

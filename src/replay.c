@@ -2,6 +2,8 @@
 #include "lem-ipc.h"
 #include "replay.h"
 #include "board.h"
+#include "libft.h"
+#include "print.h"
 #include <fcntl.h>
 #include <linux/limits.h>
 #include <stdio.h>
@@ -144,4 +146,46 @@ void    replay_move(t_data *data, t_pos old, int dx, int dy) {
 	id = header->event_id++;
 	len = snprintf(line, sizeof(line), "%ld %u MOVE %d %d %d %d %d\n", elapsed, id, data->team, old.x, old.y, dx, dy);
 	write(data->replay_fd, line, len);
+}
+
+static int replay_play(t_replay *replay) {
+    (void)replay;
+    return (0);
+}
+
+static int replay_parse(t_replay *replay, int fd) {
+    (void)replay;
+    (void)fd;
+    return (0);
+}
+
+static void replay_free(t_replay *replay) {
+    (void)replay;
+}
+
+int replay_start(char *filename) {
+    t_replay    replay;
+    int         fd;
+
+    fd = open(filename, O_RDONLY);
+    if (fd == -1)
+        return (-1);
+
+    ft_memset(&replay, 0, sizeof(t_replay));
+    if (replay_parse(&replay, fd) == -1) {
+        close(fd);
+        replay_free(&replay);
+        ft_printf("lemipc: error: failed to parse the replay file\n");
+        return (-1);
+    }
+
+    close(fd);
+    if (replay_play(&replay) == -1) {
+        replay_free(&replay);
+		ft_printf("lemipc: error: unplayable event in replay\n");
+        return (-1);
+    }
+
+    replay_free(&replay);
+    return (0);
 }
