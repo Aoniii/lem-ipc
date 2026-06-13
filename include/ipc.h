@@ -33,6 +33,8 @@ typedef struct      s_shm_header {
     int             log_count;
     int             log_head;
     char            replay_path[PATH_MAX + 128];
+    long            start_ms;
+    int             event_id;
     volatile int    ready;
     volatile int    running;
 }                   t_shm_header;

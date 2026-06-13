@@ -99,3 +99,24 @@ int replay_open(t_data *data, bool write_header) {
         replay_write_header(data, fd);
     return (fd);
 }
+
+/**
+ * @brief Logs a JOIN event to the replay file.
+ * Format: <ms> <id> JOIN <team> <x> <y>
+ * Must be called while holding the semaphore lock.
+ */
+void    replay_join(t_data *data, t_pos pos) {
+	t_shm_header    *header;
+	char            line[64];
+	long            elapsed;
+	unsigned int    id;
+	int             len;
+
+	if (data->replay_fd == -1)
+		return ;
+	header = (t_shm_header *)data->shm_ptr;
+	elapsed = now_ms() - header->start_ms;
+	id = header->event_id++;
+	len = snprintf(line, sizeof(line), "%ld %u JOIN %d %d %d\n", elapsed, id, data->team, pos.x, pos.y);
+	write(data->replay_fd, line, len);
+}

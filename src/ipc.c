@@ -67,6 +67,7 @@ static int  ipc_create(t_data *data, key_t key) {
     header = (t_shm_header *)data->shm_ptr;
     header->map_size = data->map_size;
     header->player_count = 0;
+    header->start_ms = now_ms();
     header->running = 1;
 
     // Initialize walls and replay

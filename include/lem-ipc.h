@@ -47,5 +47,6 @@ typedef struct  s_pos {
 }               t_pos;
 
 void    setup_signals(void);
+long    now_ms(void);
 
 #endif

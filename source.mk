@@ -11,5 +11,6 @@ MAIN_SRCS	+=	player.c
 MAIN_SRCS	+=	replay.c
 MAIN_SRCS	+=	sem.c
 MAIN_SRCS	+=	signal.c
+MAIN_SRCS	+=	utils.c
 MAIN_SRCS	+=	validation.c
 

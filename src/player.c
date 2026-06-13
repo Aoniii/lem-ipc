@@ -3,6 +3,7 @@
 #include "lem-ipc.h"
 #include "player.h"
 #include "board.h"
+#include "replay.h"
 #include <stdlib.h>
 
 /**
@@ -49,8 +50,9 @@ int player_place(t_data *data, t_pos *pos) {
  */
 void    player_join(t_data *data, t_pos pos) {
     sem_lock(data->sem_id);
-    log_push(data, "[+] Team %d joined at (%d, %d)", data->team, pos.x + 1, pos.y + 1);
+    log_push(data, "[+] Team %d joined at (%d, %d)", data->team, pos.x, pos.y);
     ((t_shm_header *)data->shm_ptr)->player_count++;
+    replay_join(data, pos);
     sem_unlock(data->sem_id);
 }
 
