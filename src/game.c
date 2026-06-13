@@ -32,10 +32,12 @@ int game_start(t_data *data) {
     }
 
     // 2. Connect player to the replay file
-    data->replay_fd = replay_open(data, data->is_first);
-    if (data->replay_fd == -1) {
-        ft_printf("lemipc: error: failed to open replay file\n");
-        return (1);
+    if (!data->spectator) {
+        data->replay_fd = replay_open(data, data->is_first);
+        if (data->replay_fd == -1) {
+            ft_printf("lemipc: error: failed to open replay file\n");
+            return (1);
+        }
     }
 
     // 3. Initialize display framework if running as human or spectator
@@ -107,6 +109,7 @@ static bool play_turn(t_data *data, t_pos *pos, int ch, int *frame) {
 
     header = (t_shm_header *)data->shm_ptr;
 	quit = false;
+
 	sem_lock(data->sem_id); // Lock resource state before assessing conditions
 	if (data->human) {
         // Human Mode: Read user character inputs
@@ -194,7 +197,7 @@ int game_loop(t_data *data, bool show_display, t_pos *pos) {
             board_set_empty(data, *pos);    // Clear my tile
             sem_unlock(data->sem_id);
         }
-        player_quit(data);  // Log the exit (player_count is decremented in ipc_cleanup)
+        player_quit(data, *pos);  // Log the exit (player_count is decremented in ipc_cleanup)
     }
 
     if (show_display)

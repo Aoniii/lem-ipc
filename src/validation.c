@@ -105,8 +105,8 @@ t_validate  validate_mode_conflicts(t_data *data) {
  * Uses `access(..., R_OK)` to verify file readability before starting the replay loop.
  */
 t_validate  validate_replay_file(t_data *data, char **args) {
-    const char  *file = args[0];
-    char        *ptr;
+    char    *file;
+    char    *ptr;
 
     if (!data->replay)
         return (V_SUCCESS);
@@ -114,6 +114,7 @@ t_validate  validate_replay_file(t_data *data, char **args) {
     if (args == NULL || args[0] == NULL)
         return (V_REPLAY_FILE_MISSING);
 
+    file = args[0];
     ptr = ft_strnstr(file, FILE_EXTENSION, ft_strlen(file));
 
     // Ensure the extension exists and terminates the string footprint exactly

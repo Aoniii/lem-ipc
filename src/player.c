@@ -66,9 +66,10 @@ void    player_join(t_data *data, t_pos pos) {
  * Logs the exit status event. Note: global player_count decrement is safely 
  * handled inside the centralized ipc_cleanup sequence.
  */
-void    player_quit(t_data *data) {
+void    player_quit(t_data *data, t_pos pos) {
     sem_lock(data->sem_id);
     log_push(data, "[-] Team %d left", data->team);
+    replay_quit(data, pos);
     sem_unlock(data->sem_id);
 }
 
@@ -95,6 +96,7 @@ bool    player_move(t_data *data, t_pos *pos, int dx, int dy) {
     board[ny * data->map_size + nx] = data->team;           // Claim new position
 
     log_push(data, "[>] Team %d moved from (%d, %d) to (%d, %d)", data->team, pos->x, pos->y, nx, ny);
+    replay_move(data, *pos, dx, dy);
 
     // Update local tracker data
     pos->x = nx;
