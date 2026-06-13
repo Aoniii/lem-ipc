@@ -109,8 +109,11 @@ t_bfs_result    ai_bfs_multi(t_data *data, t_pos *sources, int count) {
 static t_pos    build_step(int *parent, t_data *data, t_pos src, int end)
 {
 	t_pos   step;
-	int     src_idx = src.y * data->map_size + src.x;
-	int     cur = end;
+	int     src_idx;
+	int     cur;
+
+    src_idx = src.y * data->map_size + src.x;
+    cur = end;
 
     // Backtrack until the current tile's parent is the starting position
 	while (parent[cur] != src_idx)
@@ -163,6 +166,7 @@ t_pos   ai_step_to(t_data *data, t_pos src, t_pos dest) {
 	unsigned char   *board;
 	int             *queue;
 	int             *parent;
+    t_pos           step;
     int             order[4];
 	int             size;
 	int             head;
@@ -172,7 +176,8 @@ t_pos   ai_step_to(t_data *data, t_pos src, t_pos dest) {
 	int             ny;
 	int             ni;
 	int             i;
-	t_pos           step;
+    int             cx;
+    int             cy;
 
 	step.x = 0;
 	step.y = 0;
@@ -210,8 +215,8 @@ t_pos   ai_step_to(t_data *data, t_pos src, t_pos dest) {
 
         // Skip check for the initial starting node
 		if (cur != (src.y * (int)data->map_size + src.x)) {
-			int cx = cur % data->map_size;
-			int cy = cur / data->map_size;
+			cx = cur % data->map_size;
+			cy = cur / data->map_size;
 			if (abs(cx - dest.x) + abs(cy - dest.y) == 1) {
 				step = build_step(parent, data, src, cur);
                 free(queue);

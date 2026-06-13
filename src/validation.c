@@ -46,12 +46,16 @@ t_validate  validate_args(t_data *data, char **args) {
  * pollution, overflow vulnerabilities, and explicit authorized limits.
  */
 t_validate  validate_team(t_data *data, char **args) {
+    char            *value;
+    char            *endptr;
+	unsigned int    result;
+
     if (args == NULL || args[0] == NULL)
         return (V_MISSING_TEAM);
 
-    char            *value = args[0];
-    char            *endptr = NULL;
-	unsigned int    result = strtoul(value, &endptr, 10);
+    value = args[0];
+    endptr = NULL;
+	result = strtoul(value, &endptr, 10);
 
     // Error if characters remain unparsed (*endptr) or no digits were evaluated entirely
 	if (*endptr != '\0' || endptr == value)
@@ -101,14 +105,16 @@ t_validate  validate_mode_conflicts(t_data *data) {
  * Uses `access(..., R_OK)` to verify file readability before starting the replay loop.
  */
 t_validate  validate_replay_file(t_data *data, char **args) {
+    const char  *file = args[0];
+    char        *ptr;
+
     if (!data->replay)
         return (V_SUCCESS);
 
     if (args == NULL || args[0] == NULL)
         return (V_REPLAY_FILE_MISSING);
 
-    const char  *file = args[0];
-    char        *ptr = ft_strnstr(file, FILE_EXTENSION, ft_strlen(file));
+    ptr = ft_strnstr(file, FILE_EXTENSION, ft_strlen(file));
 
     // Ensure the extension exists and terminates the string footprint exactly
     if (!ptr || ptr[ft_strlen(FILE_EXTENSION)] != '\0')

@@ -10,8 +10,10 @@
  * Must be called while holding the semaphore lock if multi-process collision is possible.
  */
 void    log_push(t_data *data, const char *fmt, ...) {
-    t_shm_header    *header = (t_shm_header *)data->shm_ptr;
+    t_shm_header    *header;
     va_list         ap;
+
+    header = (t_shm_header *)data->shm_ptr;
 
     // 1. Process and format the variadic arguments into the shared logs matrix row
     va_start(ap, fmt);

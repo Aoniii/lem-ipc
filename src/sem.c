@@ -13,8 +13,9 @@
 static int  sem_wait_ready(int sem_id) {
     union semun     arg;
     struct semid_ds buf;
-    int             retry = 0;
+    int             retry;
 
+    retry = 0;
     arg.buf = &buf;
     while (retry < SEM_MAX_RETRY) {
         // Read the semaphore's kernel metadata

@@ -20,7 +20,10 @@
  */
 int game_start(t_data *data) {
     t_pos           pos = {0};
-    bool            show_display = (data->human || data->spectator);
+    bool            show_display;
+    int             ret;
+
+    show_display = (data->human || data->spectator);
 
     // 1. Initialize IPC mechanisms (Shared memory, Semaphores, Message queues)
     if (ipc_init(data) != 0) {
@@ -57,7 +60,7 @@ int game_start(t_data *data) {
 
     // 5. Fire up the core loop execution state
     data->is_alive = true;
-    int ret = game_loop(data, show_display, &pos);
+    ret = game_loop(data, show_display, &pos);
 
     // 6. Clean up allocations and context states upon loop break
     if (show_display) display_destroy();
@@ -99,9 +102,10 @@ static void human_move(t_data *data, t_pos *pos, int ch) {
  * @brief Plays one turn for this process (movement or death) under the lock.
  */
 static bool play_turn(t_data *data, t_pos *pos, int ch, int *frame) {
-	t_shm_header    *header = (t_shm_header *)data->shm_ptr;
+	t_shm_header    *header;
 	bool            quit;
 
+    header = (t_shm_header *)data->shm_ptr;
 	quit = false;
 	sem_lock(data->sem_id); // Lock resource state before assessing conditions
 	if (data->human) {
@@ -131,11 +135,16 @@ static bool play_turn(t_data *data, t_pos *pos, int ch, int *frame) {
  * @brief Main game loop: snapshot, play a turn, render, repeat.
  */
 int game_loop(t_data *data, bool show_display, t_pos *pos) {
-    t_shm_header    *header = (t_shm_header *)data->shm_ptr;
-    unsigned int    size = data->map_size * data->map_size;
-    unsigned char   *snapshot = NULL;
-    int             frame = 0;
+    t_shm_header    *header;
+    unsigned int    size;
+    unsigned char   *snapshot;
+    int             frame;
     int             ch;
+
+    header = (t_shm_header *)data->shm_ptr;
+    size = data->map_size * data->map_size;
+    snapshot = NULL;
+    frame = 0;
 
     // Allocate memory for local double-buffering if UI rendering is active
     if (show_display) {

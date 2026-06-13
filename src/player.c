@@ -13,18 +13,23 @@
  * and scans the board to claim exactly that $N$-th empty slot.
  */
 int player_place(t_data *data, t_pos *pos) {
+    unsigned char   *board;
+    unsigned int    count;
+    unsigned int    rdm;
+    unsigned int    i;
+
     sem_lock(data->sem_id);
 
     // 1. Safety check: gather how many tiles are currently free
-    unsigned int    count = board_count(data, TILE_EMPTY);
+    count = board_count(data, TILE_EMPTY);
     if (count == 0) {
         sem_unlock(data->sem_id);
         return (-1);
     }
 
-    unsigned char   *board = board_get(data);
-    unsigned int    rdm = rand() % count;   // Target the N-th empty tile safely
-    unsigned int    i = 0;
+    board = board_get(data);
+    rdm = rand() % count;   // Target the N-th empty tile safely
+    i = 0;
 
     // 2. Iterate through the grid to locate the chosen empty slot
     while (i < data->map_size * data->map_size) {

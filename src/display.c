@@ -18,10 +18,13 @@ static const int    g_colors[6] = {
  * mixes to support up to 21 distinct teams visual IDs.
  */
 static void	init_team_colors(void) {
-	int i = 0;
-	int a = 0;
-	int b = 1;
+	int i;
+	int a ;
+	int b;
 
+    i = 0;
+	a = 0;
+	b = 1;
     // Solid color blocks for the first 6 teams
 	while (i < 6) {
 		init_pair(i + 1, g_colors[i], g_colors[i]);
@@ -85,9 +88,10 @@ int display_init(t_data *data) {
  * @brief Draws a box outline using standard ncurses ACS (Alternate Character Set) symbols.
  */
 static void draw_border(unsigned int height, unsigned int start_y) {
-    unsigned int    width = MAX_MAP_SIZE * 2;
+    unsigned int    width;
     unsigned int    i;
 
+    width = MAX_MAP_SIZE * 2;
     // Draw corners
     mvaddch(start_y, 0, ACS_ULCORNER);
     mvaddch(start_y, width + 1, ACS_URCORNER);
@@ -128,13 +132,15 @@ static int blink_on(void) {
  * so they look square. The local player blinks.
  */
 static void draw_map(t_data *data, unsigned char *snapshot, t_pos *pos) {
-    int offset_x = 1 + MAX_MAP_SIZE - data->map_size;
-    int offset_y = 1;
-
     unsigned int    y;
     unsigned int    x;
     unsigned char   tile;
+    int             offset_x;
+    int             offset_y;
+    int             attr;
 
+    offset_x = 1 + MAX_MAP_SIZE - data->map_size;
+    offset_y = 1;
     y = 0;
     while (y < data->map_size) {
         x = 0;
@@ -148,7 +154,7 @@ static void draw_map(t_data *data, unsigned char *snapshot, t_pos *pos) {
                 mvaddch(y + offset_y, x * 2 + offset_x, '.');
                 mvaddch(y + offset_y, x * 2 + offset_x + 1, '.');
             } else {
-                int attr = COLOR_PAIR(tile);
+                attr = COLOR_PAIR(tile);
                 if (pos && (int)x == pos->x && (int)y == pos->y && !blink_on())
                     attr = COLOR_PAIR(BLACK_ATTR);
 
@@ -167,10 +173,12 @@ static void draw_map(t_data *data, unsigned char *snapshot, t_pos *pos) {
  * @brief Displays the shared ring-buffer logs, oldest to newest.
  */
 static void draw_logs(t_data *data, unsigned int start_y) {
-    t_shm_header    *header = (t_shm_header *)data->shm_ptr;
-    int             i = 0;
+    t_shm_header    *header;
+    int             i;
     int             idx;
 
+    header = (t_shm_header *)data->shm_ptr;
+    i = 0;
     while (i < header->log_count) {
         idx = (header->log_head - header->log_count + i + LOG_COUNT) % LOG_COUNT;
         mvprintw(start_y + 1 + i, 2, "%s", header->logs[idx]);

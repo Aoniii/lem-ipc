@@ -19,7 +19,9 @@
  * guarantee the file exists before calling it.
  */
 static int  create_ipc_file(void) {
-    int fd = open(IPC_PATH, O_CREAT | O_RDONLY, IPC_PERMS);
+    int fd;
+
+    fd = open(IPC_PATH, O_CREAT | O_RDONLY, IPC_PERMS);
     if (fd != -1)
         close(fd);
     return (fd);
@@ -33,8 +35,9 @@ static int  create_ipc_file(void) {
  */
 static int  ipc_create(t_data *data, key_t key) {
     t_shm_header    *header;
-    size_t          size = sizeof(t_shm_header) + data->map_size * data->map_size;
+    size_t          size;
 
+    size = sizeof(t_shm_header) + data->map_size * data->map_size;
     // Create the SHM segment (fails if it already exists)
     data->shm_id = shmget(key, size, IPC_CREAT | IPC_EXCL | IPC_PERMS);
     if (data->shm_id == -1) {
@@ -93,8 +96,9 @@ static int  ipc_create(t_data *data, key_t key) {
  * so they never read uninitialized data.
  */
 static int  shm_wait_ready(t_shm_header *header) {
-    int retry = 0;
+    int retry;
 
+    retry = 0;
     while (retry < SHM_MAX_RETRY) {
         if (header->ready == 1)
             return (0);

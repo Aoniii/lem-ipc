@@ -35,7 +35,9 @@ unsigned int    board_count(t_data *data, unsigned char value) {
  * @brief Clears a specific tile on the board, making it empty.
  */
 void    board_set_empty(t_data *data, t_pos pos) {
-    unsigned char   *board = board_get(data);
+    unsigned char   *board;
+
+    board = board_get(data);
     board[pos.y * data->map_size + pos.x] = TILE_EMPTY;
 }
 
@@ -172,16 +174,23 @@ void    walls_generator(t_data *data) {
     static const int    dx[4] = {0, 0, -1, 1};
 	static const int    dy[4] = {-1, 1, 0, 0};
 
-    unsigned char   *board = board_get(data);
-    int             max = data->map_size * data->map_size;
-    int             free_tile = max * (1 - WALL_RATIO); // Number of empty tiles to carve out
-    int             y = rand() % data->map_size;
-    int             x = rand() % data->map_size;
+    unsigned char   *board;
+    int             max;
+    int             free_tile;
+    int             y;
+    int             x;
     int             rdm;
+    int             i;
     bool            new_direction;
 
+    board = board_get(data);
+    max = data->map_size * data->map_size;
+    free_tile = max * (1 - WALL_RATIO); // Number of empty tiles to carve out
+    y = rand() % data->map_size;
+    x = rand() % data->map_size;
+
     // 1. Initialize the entire map as a solid block of walls
-    int i = 0;
+    i = 0;
     while (i < max)
         board[i++] = TILE_WALL;
 
