@@ -13,20 +13,7 @@
 #include "get_next_line_bonus.h"
 #include <stdlib.h>
 
-char	*ft_strchr(const char *s, int c)
-{
-	if (!s)
-		return (0);
-	while (*s)
-	{
-		if (*s == c)
-			return ((char *) s);
-		s++;
-	}
-	return (0);
-}
-
-char	*ft_strjoin(char *s1, char *s2, size_t limit)
+char	*ft_strjoin_gnl(char *s1, char *s2, size_t limit)
 {
 	char	*ptr;
 	size_t	i;
@@ -51,16 +38,6 @@ char	*ft_strjoin(char *s1, char *s2, size_t limit)
 	free(s1);
 	s1 = 0;
 	return (ptr);
-}
-
-size_t	ft_strlen(char *s)
-{
-	size_t	size;
-
-	size = 0;
-	while (s[size])
-		size++;
-	return (size);
 }
 
 size_t	ft_size(char *s)

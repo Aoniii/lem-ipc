@@ -34,7 +34,7 @@ static char	*ft_read(int fd, char *backup)
 			return (0);
 		}
 		buffer[i] = 0;
-		backup = ft_strjoin(backup, buffer, i);
+		backup = ft_strjoin_gnl(backup, buffer, i);
 	}
 	free(buffer);
 	buffer = 0;

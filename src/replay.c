@@ -4,6 +4,8 @@
 #include "board.h"
 #include "libft.h"
 #include "print.h"
+#include "libft.h"
+#include "get_next_line_bonus.h"
 #include <fcntl.h>
 #include <linux/limits.h>
 #include <stdio.h>
@@ -153,9 +155,83 @@ static int replay_play(t_replay *replay) {
     return (0);
 }
 
+static void free_split(char **split) {
+	int i;
+
+	if (!split)
+		return ;
+
+	i = 0;
+	while (split[i])
+		free(split[i++]);
+	free(split);
+}
+
+// parse “MAP <size>” and “BOARD <0/1...>”, set map_size and initial_board
+static int  parse_header(t_replay *replay, int fd) {
+	char    *line;
+	char    **parts;
+	int	    i;
+
+	// --- line MAP ---
+	line = get_next_line(fd);
+	if (!line)
+		return (-1);
+
+	parts = ft_split(line, ' ');
+	free(line);
+	if (!parts || !parts[0] || !parts[1] || ft_strncmp(parts[0], "MAP", 4) != 0) {
+        free_split(parts);
+        return (-1);
+    }
+
+	replay->map_size = ft_atoi(parts[1]);
+	free_split(parts);
+	if (replay->map_size < MIN_MAP_SIZE || replay->map_size > MAX_MAP_SIZE)
+		return (-1);
+
+	// --- line BOARD ---
+	line = get_next_line(fd);
+	if (!line)
+		return (-1);
+
+	parts = ft_split(line, ' ');
+	free(line);
+	if (!parts || !parts[0] || !parts[1] || ft_strncmp(parts[0], "BOARD", 6) != 0) {
+        free_split(parts);
+        return (-1);
+    }
+
+    // check that the string is exactly map_size * map_size in length and consists of 0s and 1s
+	if (ft_strlen(parts[1]) != replay->map_size * replay->map_size) {
+        free_split(parts);
+        return (-1);
+    }
+	replay->initial_board = malloc(replay->map_size * replay->map_size);
+	if (!replay->initial_board) {
+        free_split(parts);
+        return (-1);
+    }
+
+	i = 0;
+	while (parts[1][i]) {
+		if (parts[1][i] == '0') {
+			replay->initial_board[i] = TILE_EMPTY;
+        } else if (parts[1][i] == '1') {
+			replay->initial_board[i] = TILE_WALL;
+        } else {
+            free_split(parts);
+            return (-1);
+        }
+		i++;
+	}
+
+	free_split(parts);
+	return (0);
+}
+
 static int replay_parse(t_replay *replay, int fd) {
-    (void)replay;
-    (void)fd;
+    parse_header(replay, fd);
     return (0);
 }
 
