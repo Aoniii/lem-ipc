@@ -48,7 +48,7 @@ static int  parse_header(t_replay *replay, int fd) {
 		return (-1);
 
     i = 0;
-    while (line[i] != '\n')
+    while (line[i] && line[i] != '\n')
         i++;
     line[i] = 0;
 
