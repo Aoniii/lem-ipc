@@ -26,6 +26,10 @@ PRINTF_DIR			=	ft_printf
 PRINTF_SRCS			=	$(addprefix $(PRINTF_DIR)/, $(_PRINTF_SRCS))
 PRINTF_OBJS_PATH	=	$(patsubst $(PRINTF_DIR)/%.c,$(OBJS_DIR)/$(PRINTF_DIR)/%.o,$(PRINTF_SRCS))
 
+GET_NEXT_LINE_DIR	=	get_next_line
+GET_NEXT_LINE_SRCS	=	$(addprefix $(GET_NEXT_LINE_DIR)/, get_next_line_bonus.c get_next_line_utils_bonus.c)
+SRCS				+=	$(GET_NEXT_LINE_SRCS)
+
 PARSER_DIR	=	parser
 
 RED			=	\033[1;31m
@@ -82,7 +86,7 @@ $(OBJS_DIR)/%.o: %.c
 	echo $$COUNT > .count3; \
 	PERCENT=$$(($$COUNT * 100 / $(TOTAL_FILES))); \
 	printf "$(CUT)$(RESET)[$(YELLOW)%3d%%$(RESET)] 🏗️ Constructing Death Star: %s\n" $$PERCENT $(notdir $<)
-	@$(CC) $(CFLAGS) -I include -I $(LIBFT_DIR) -I $(PARSER_DIR) -c $< -o $@
+	@$(CC) $(CFLAGS) -I include -I $(LIBFT_DIR) -I $(PARSER_DIR) -I $(GET_NEXT_LINE_DIR) -c $< -o $@
 	@printf "$(UP)"
 
 $(NAME): $(LIBFT_NAME) $(PRINTF_NAME) $(OBJS_PATH)
