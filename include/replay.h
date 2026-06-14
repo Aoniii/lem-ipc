@@ -43,6 +43,10 @@ void    replay_event(t_data *data, const char *name, t_pos pos);
 void    replay_join(t_data *data, t_pos pos);
 void    replay_quit(t_data *data, t_pos pos);
 void    replay_move(t_data *data, t_pos old, int dx, int dy);
+int     replay_parse(t_replay *replay, int fd);
+int     display_init_replay(t_replay *replay);
+void    display_render_replay(t_replay *replay);
+int     replay_play(t_replay *replay);
 int     replay_start(char *filename);
 
 #endif

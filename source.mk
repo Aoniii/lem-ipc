@@ -8,9 +8,15 @@ MAIN_SRCS	+=	ipc.c
 MAIN_SRCS	+=	log.c
 MAIN_SRCS	+=	msg.c
 MAIN_SRCS	+=	player.c
-MAIN_SRCS	+=	replay.c
 MAIN_SRCS	+=	sem.c
 MAIN_SRCS	+=	signal.c
 MAIN_SRCS	+=	utils.c
 MAIN_SRCS	+=	validation.c
+MAIN_SRCS	+=	replay/create.c
+MAIN_SRCS	+=	replay/event.c
+MAIN_SRCS	+=	replay/open.c
+MAIN_SRCS	+=	replay/parse.c
+MAIN_SRCS	+=	replay/play.c
+MAIN_SRCS	+=	replay/render.c
+MAIN_SRCS	+=	replay/start.c
 
