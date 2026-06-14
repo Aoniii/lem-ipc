@@ -89,7 +89,7 @@ int  replay_play(t_replay *replay) {
 	replay->playing = false;
 	last_tick = now_ms();
 
-	while (1) {
+	while (!g_stop) {
 		ch = getch();
 		if (ch == 'q' || ch == 'Q') //quit
 			break ;
