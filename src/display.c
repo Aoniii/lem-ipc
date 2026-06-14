@@ -17,7 +17,7 @@ static const int    g_colors[6] = {
  * * Phase 2: Generates up to 15 unique combinations of foreground/background 
  * mixes to support up to 21 distinct teams visual IDs.
  */
-static void	init_team_colors(void) {
+void init_team_colors(void) {
 	int i;
 	int a ;
 	int b;
@@ -87,7 +87,7 @@ int display_init(t_data *data) {
 /**
  * @brief Draws a box outline using standard ncurses ACS (Alternate Character Set) symbols.
  */
-static void draw_border(unsigned int height, unsigned int start_y) {
+void draw_border(unsigned int height, unsigned int start_y) {
     unsigned int    width;
     unsigned int    i;
 
