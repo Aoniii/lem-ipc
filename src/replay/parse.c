@@ -180,6 +180,12 @@ static int  parse_event(t_replay *replay, char *line, long *last_ms, unsigned in
         return (-1);
     }
 
+    // check team
+    if (ev->team >= MAX_TEAM) {
+        free(ev);
+        return (-1);
+    }
+
     // in bounds
 	if (ev->x < 0 || ev->x >= (int)replay->map_size || ev->y < 0 || ev->y >= (int)replay->map_size) {
         free(ev);

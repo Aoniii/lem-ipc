@@ -1,43 +1,84 @@
 #include "display.h"
 #include "replay.h"
 #include "lem-ipc.h"
+#include "print.h"
 #include <ncurses.h>
+#include <stdbool.h>
 #include <unistd.h>
 
 /**
  * @brief Applies an event to the current board (move forward).
  * JOIN places the team, MOVE shifts it, QUIT clears it.
  */
-static void apply_event(t_replay *replay, t_event *ev) {
+static int apply_event(t_replay *replay, t_event *ev) {
 	unsigned char   *board = replay->board;
 	unsigned int    w = replay->map_size;
 
-	if (ev->event == EV_JOIN) {
+    if (ev->event == EV_JOIN) {
+        // check spawn tile is empty
+        if (board[ev->y * w + ev->x] != TILE_EMPTY)
+            return (-1);
+
 		board[ev->y * w + ev->x] = ev->team;
     } else if (ev->event == EV_QUIT) {
+        // check current tile is the right team
+        if (board[ev->y * w + ev->x] != ev->team)
+            return (-1);
+
 		board[ev->y * w + ev->x] = TILE_EMPTY;
     } else if (ev->event == EV_MOVE) {
+        // check current tile is the right team
+        if (board[ev->y * w + ev->x] != ev->team)
+            return (-1);
+        // boundary guard check on target tile
+        if (ev->x + ev->dx < 0 || ev->x + ev->dx >= (int)w || ev->y + ev->dy < 0 || ev->y + ev->dy >= (int)w)
+            return (-1);
+        // check target tile is empty
+        if (board[(ev->y + ev->dy) * w + (ev->x + ev->dx)] != TILE_EMPTY)
+            return (-1);
+
 		board[ev->y * w + ev->x] = TILE_EMPTY;
 		board[(ev->y + ev->dy) * w + (ev->x + ev->dx)] = ev->team;
 	}
+
+    return (0);
 }
 
 /**
  * @brief Reverts an event on the current board (move backward).
  * Undoes exactly what apply_event did.
  */
-static void undo_event(t_replay *replay, t_event *ev) {
+static int  undo_event(t_replay *replay, t_event *ev) {
 	unsigned char   *board = replay->board;
 	unsigned int    w = replay->map_size;
 
-	if (ev->event == EV_JOIN) {
+    if (ev->event == EV_JOIN) {
+        // check current tile is the right team
+        if (board[ev->y * w + ev->x] != ev->team)
+            return (-1);
+
 		board[ev->y * w + ev->x] = TILE_EMPTY;
     } else if (ev->event == EV_QUIT) {
+        // check old tile is empty
+        if (board[ev->y * w + ev->x] != TILE_EMPTY)
+            return (-1);
+
 		board[ev->y * w + ev->x] = ev->team;
     } else if (ev->event == EV_MOVE) {
+        // check old tile is empty
+        if (board[ev->y * w + ev->x] != TILE_EMPTY)
+            return (-1);
+        // boundary guard check on current tile
+        if (ev->x + ev->dx < 0 || ev->x + ev->dx >= (int)w || ev->y + ev->dy < 0 || ev->y + ev->dy >= (int)w)
+            return (-1);
+        // check current tile is the right team
+        if (board[(ev->y + ev->dy) * w + (ev->x + ev->dx)] != ev->team)
+            return (-1);
+
 		board[(ev->y + ev->dy) * w + (ev->x + ev->dx)] = TILE_EMPTY;
 		board[ev->y * w + ev->x] = ev->team;
 	}
+    return (0);
 }
 
 static t_event  *replay_last(t_replay *replay) {
@@ -54,7 +95,8 @@ static t_event  *replay_last(t_replay *replay) {
 static bool step_forward(t_replay *replay) {
 	if (!replay->current)
 		return (false);
-	apply_event(replay, replay->current);
+	if (apply_event(replay, replay->current) == -1)
+        return (false);
 	replay->ms_saved = replay->current->ms;
 	replay->current = replay->current->next;
 	return (true);
@@ -73,15 +115,17 @@ static bool step_backward(t_replay *replay) {
 	if (!ev)
 		return (false);             // already from the start
 
-	undo_event(replay, ev);
+	if (undo_event(replay, ev) == -1)
+        return (false);
 	replay->current = ev;
 	replay->ms_saved = ev->ms;
 	return (true);
 }
 
 int  replay_play(t_replay *replay) {
+    long    last_tick;
 	int     ch;
-	long    last_tick;
+    bool    b;
 
 	if (display_init_replay(replay) == -1)
 		return (-1);
@@ -89,6 +133,7 @@ int  replay_play(t_replay *replay) {
 	replay->playing = false;
 	last_tick = now_ms();
 
+    b = true;
 	while (!g_stop) {
 		ch = getch();
 		if (ch == 'q' || ch == 'Q') //quit
@@ -97,9 +142,14 @@ int  replay_play(t_replay *replay) {
 		if (ch == ' ') {    // play/pause
             replay->playing = !replay->playing;
         } else if (ch == KEY_RIGHT && !replay->playing) {
-            step_forward(replay);
+            b = step_forward(replay);
         } else if (ch == KEY_LEFT && !replay->playing) {
-            step_backward(replay);
+            b = step_backward(replay);
+        }
+
+        if (!b) {
+            ft_printf("lemipc: error: illegal move\n");
+            break ;
         }
 		
         if (replay->playing) {
