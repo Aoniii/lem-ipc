@@ -91,19 +91,19 @@ static t_event  *replay_last(t_replay *replay) {
     return (ev);
 }
 
-// skips to the next event. Returns false if there are no more events to process.
-static bool step_forward(t_replay *replay) {
+// skips to the next event
+static int  step_forward(t_replay *replay) {
 	if (!replay->current)
-		return (false);
+		return (0);
 	if (apply_event(replay, replay->current) == -1)
-        return (false);
+        return (-1);
 	replay->ms_saved = replay->current->ms;
 	replay->current = replay->current->next;
-	return (true);
+	return (1);
 }
 
-// moves back one event. Returns false if the current position is already at the beginning.
-static bool step_backward(t_replay *replay) {
+// moves back one event
+static int  step_backward(t_replay *replay) {
 	t_event *ev;
 
     // the event to cancel is the one immediately before the current one
@@ -113,19 +113,19 @@ static bool step_backward(t_replay *replay) {
 		ev = replay_last(replay);   // if current == NULL (end), take the last one
 
 	if (!ev)
-		return (false);             // already from the start
+		return (0);                // already from the start
 
 	if (undo_event(replay, ev) == -1)
-        return (false);
+        return (-1);
 	replay->current = ev;
 	replay->ms_saved = ev->ms;
-	return (true);
+	return (1);
 }
 
 int  replay_play(t_replay *replay) {
     long    last_tick;
 	int     ch;
-    bool    b;
+    int     b;
 
 	if (display_init_replay(replay) == -1)
 		return (-1);
@@ -133,7 +133,7 @@ int  replay_play(t_replay *replay) {
 	replay->playing = false;
 	last_tick = now_ms();
 
-    b = true;
+    b = 0;
 	while (!g_stop) {
 		ch = getch();
 		if (ch == 'q' || ch == 'Q') //quit
@@ -147,10 +147,8 @@ int  replay_play(t_replay *replay) {
             b = step_backward(replay);
         }
 
-        if (!b) {
-            ft_printf("lemipc: error: illegal move\n");
+        if (b == -1)
             break ;
-        }
 		
         if (replay->playing) {
 			long now = now_ms();
@@ -158,8 +156,11 @@ int  replay_play(t_replay *replay) {
 			last_tick = now;
 
 			// apply all events where ms <= ms_saved
-			while (replay->current && replay->current->ms <= replay->ms_saved)
-				step_forward(replay);
+			while (replay->current && replay->current->ms <= replay->ms_saved) {
+                b = step_forward(replay);
+                if (b == -1)
+                    break ;
+            }
 
 			if (!replay->current)
                 replay->playing = false;
@@ -172,5 +173,7 @@ int  replay_play(t_replay *replay) {
 	}
 
 	display_destroy();
-	return (0);
+    if (b == -1)
+        ft_printf("lemipc: error: illegal move\n");
+    return (0);
 }
