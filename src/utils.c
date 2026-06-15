@@ -17,7 +17,7 @@ int team_with_most_kills(int *kills, int *nb) {
     int i;
     int team;
 
-    i = 0;
+    i = 1;
     team = 0;
     while (i <= MAX_TEAM) {
         if (kills[i] > nb[0]) {
