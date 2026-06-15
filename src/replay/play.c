@@ -161,6 +161,8 @@ int  replay_play(t_replay *replay) {
                 if (b == -1)
                     break ;
             }
+            if (b == -1)
+                break ;
 
 			if (!replay->current)
                 replay->playing = false;
