@@ -35,6 +35,8 @@ typedef struct      s_shm_header {
     char            replay_path[PATH_MAX + 128];
     long            start_ms;
     int             event_id;
+    int             kill[MAX_TEAM + 1];
+    int             winner_team;
     volatile int    ready;
     volatile int    running;
 }                   t_shm_header;

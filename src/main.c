@@ -1,3 +1,4 @@
+#include "ipc.h"
 #include "lem-ipc.h"
 #include "parser.h"
 #include "replay.h"

@@ -10,6 +10,7 @@
 #include "ipc.h"
 #include "replay.h"
 #include <ncurses.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 /**
@@ -19,9 +20,11 @@
  * and IPC teardown upon exit or crash.
  */
 int game_start(t_data *data) {
+    t_shm_header    *header;
     t_pos           pos = {0};
     bool            show_display;
     int             ret;
+    int             nb[1];
 
     show_display = (data->human || data->spectator);
 
@@ -64,8 +67,21 @@ int game_start(t_data *data) {
     data->is_alive = true;
     ret = game_loop(data, show_display, &pos);
 
-    // 6. Clean up allocations and context states upon loop break
+    // 6. Clean up allocations and context states upon loop break, and show statistics
     if (show_display) display_destroy();
+    if (data->spectator) {
+        sem_lock(data->sem_id);
+        header = (t_shm_header *)data->shm_ptr;
+        nb[0] = 0;
+        if (!header->running && header->winner_team != 0)
+            ft_printf("lemipc: winning team: %d\n", header->winner_team);
+        else
+            ft_printf("lemipc: The game is still in progress\n");
+        ft_printf("lemipc: total turns: %d\n", header->event_id + 1);
+        ft_printf("lemipc: the team with most kills: %d (%d)\n", team_with_most_kills(header->kill, nb), nb[0]);
+        ft_printf("lemipc: game duration: %ld ms\n", now_ms() - header->start_ms);
+        sem_unlock(data->sem_id);
+    }
     ipc_cleanup(data);
     return (ret);
 }

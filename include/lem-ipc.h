@@ -48,5 +48,6 @@ typedef struct  s_pos {
 
 void    setup_signals(void);
 long    now_ms(void);
+int     team_with_most_kills(int *kills, int *nb);
 
 #endif

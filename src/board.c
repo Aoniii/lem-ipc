@@ -80,6 +80,7 @@ bool    is_circled(t_data *data, t_pos *pos) {
     static const int    dx[8] = {-1, 0, 1, -1, 1, -1, 0, 1};
 	static const int    dy[8] = {-1, -1, -1, 0, 0, 1, 1, 1};
 
+    t_shm_header    *header;
 	unsigned char   *board;
 	unsigned char   tile;
 	int             counts[MAX_TEAM + 1];
@@ -89,6 +90,7 @@ bool    is_circled(t_data *data, t_pos *pos) {
     int             walls = 0;
     int             enemies = 0;
 
+    header = (t_shm_header *)data->shm_ptr;
 	board = board_get(data);
 
     // Reset enemy team tracking array
@@ -116,8 +118,10 @@ bool    is_circled(t_data *data, t_pos *pos) {
 		    counts[tile]++;
             enemies++;
             // Core Rule: At least 2 players from the SAME enemy team are adjacent
-		    if (counts[tile] >= 2)
-			    return (true);
+		    if (counts[tile] >= 2) {
+                header->kill[tile]++;
+                return (true);
+            }
         }
 
         /* * BONUS WALLS CONDITION (Non-mandatory):
@@ -136,6 +140,7 @@ bool    is_circled(t_data *data, t_pos *pos) {
  * Iterates through the board to count how many distinct teams still have active agents.
  */
 bool    is_game_over(t_data *data) {
+    t_shm_header    *header = (t_shm_header *)data->shm_ptr;
     unsigned char   *board = board_get(data);
     unsigned char   tile;
     unsigned int    i = 0;
@@ -160,6 +165,16 @@ bool    is_game_over(t_data *data) {
         }
         i++;
     }
+
+    i = 0;
+    while (i <= MAX_TEAM) {
+        if (team[i] > 0) {
+            header->winner_team = i;
+            break ;
+        }
+        i++;
+    }
+
     return (true);
 }
 
