@@ -18,5 +18,6 @@ void    draw_border(unsigned int height, unsigned int start_y);
 
 // log.c
 void    log_push(t_data *data, const char *fmt, ...);
+void    verbose_log(t_data *data, const char *fmt, ...);
 
 #endif

@@ -56,6 +56,7 @@ int player_place(t_data *data, t_pos *pos) {
 void    player_join(t_data *data, t_pos pos) {
     sem_lock(data->sem_id);
     log_push(data, "[+] Team %d joined at (%d, %d)", data->team, pos.x, pos.y);
+    verbose_log(data, "joined at (%d, %d)", pos.x, pos.y);
     ((t_shm_header *)data->shm_ptr)->player_count++;
     replay_join(data, pos);
     sem_unlock(data->sem_id);
@@ -69,6 +70,7 @@ void    player_join(t_data *data, t_pos pos) {
 void    player_quit(t_data *data, t_pos pos) {
     sem_lock(data->sem_id);
     log_push(data, "[-] Team %d left", data->team);
+    verbose_log(data, "left");
     replay_quit(data, pos);
     sem_unlock(data->sem_id);
 }
@@ -96,6 +98,7 @@ bool    player_move(t_data *data, t_pos *pos, int dx, int dy) {
     board[ny * data->map_size + nx] = data->team;           // Claim new position
 
     log_push(data, "[>] Team %d moved from (%d, %d) to (%d, %d)", data->team, pos->x, pos->y, nx, ny);
+    verbose_log(data, "moved (%d,%d) -> (%d,%d)", pos->x, pos->y, nx, ny);
     replay_move(data, *pos, dx, dy);
 
     // Update local tracker data

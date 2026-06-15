@@ -2,6 +2,7 @@
 #include "lem-ipc.h"
 #include <stdarg.h>
 #include <stdio.h>
+#include <unistd.h>
 
 /**
  * @brief Thread-safe message logger that pushes formatted strings into a shared ring buffer.
@@ -26,4 +27,22 @@ void    log_push(t_data *data, const char *fmt, ...) {
     // 3. Increment total valid active logs count until reaching the max allocation threshold
     if (header->log_count < LOG_COUNT)
         header->log_count++;
+}
+
+/**
+ * @brief Prints a player's action to stdout when verbose mode is on.
+ * Prefixed with team and PID so concurrent AI processes sharing a
+ * terminal can be told apart. No-op when verbose is disabled.
+ */
+void    verbose_log(t_data *data, const char *fmt, ...) {
+	char    buf[256];
+	va_list ap;
+
+	if (!data->verbose)
+		return ;
+	va_start(ap, fmt);
+	vsnprintf(buf, sizeof(buf), fmt, ap);
+	va_end(ap);
+	printf("[team %d | pid %d] %s\n", data->team, getpid(), buf);
+	fflush(stdout);
 }
