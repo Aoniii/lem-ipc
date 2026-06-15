@@ -24,7 +24,8 @@ int game_start(t_data *data) {
     t_pos           pos = {0};
     bool            show_display;
     int             ret;
-    int             kill[2];
+    int             top_team;
+    int             top_kills;
 
     show_display = (data->human || data->spectator);
 
@@ -72,13 +73,17 @@ int game_start(t_data *data) {
     if (data->spectator) {
         sem_lock(data->sem_id);
         header = (t_shm_header *)data->shm_ptr;
-        kill[1] = team_with_most_kills(header->kill, kill);
+        top_kills = 0;
+        top_team = team_with_most_kills(header->kill, &top_kills);
         if (!header->running && header->winner_team != 0)
             ft_printf("lemipc: winning team: %d\n", header->winner_team);
         else
             ft_printf("lemipc: The game is still in progress\n");
         ft_printf("lemipc: total turns: %d\n", header->event_id + 1);
-        ft_printf("lemipc: the team with most kills: %d (%d)\n", kill[1], kill[0]);
+        if (top_kills > 0)
+            ft_printf("lemipc: the team with most kills: %d (%d)\n", top_team, top_kills);
+        else
+            ft_printf("lemipc: no kills recorded\n");
         ft_printf("lemipc: game duration: %ld ms\n", now_ms() - header->start_ms);
         sem_unlock(data->sem_id);
     }
