@@ -79,11 +79,11 @@ int main(int argc, char** argv) {
             .help       = "replay a recorded game from file"
         },
         {
-            .short_opt  = 'v',
+            .short_opt  = 0,
             .long_opt   = "verbose",
-            .flags      = OPT_SHORT | OPT_LONG | TYPE_BOOLEAN,
+            .flags      = OPT_LONG | TYPE_BOOLEAN,
             .value      = &data.verbose,
-            .help       = "enable debug output"
+            .help       = "print each player's actions to stdout"
         },
         {
 			.short_opt	= 0,
