@@ -112,10 +112,6 @@ t_validate  validate_replay_file(t_data *data) {
         return (V_SUCCESS);
 
     file = data->replay;
-
-    if (file == NULL)
-        return (V_REPLAY_FILE_MISSING);
-
     ptr = ft_strnstr(file, FILE_EXTENSION, ft_strlen(file));
 
     // Ensure the extension exists and terminates the string footprint exactly
@@ -140,7 +136,6 @@ static const char   *validate_msg[] = {
     [V_CONFLICT_SPECTATOR_REPLAY]   = "--spectator and --replay are mutually exclusive",
     [V_CONFLICT_SPECTATOR_HUMAN]    = "--spectator and --human are mutually exclusive",
     [V_CONFLICT_HUMAN_REPLAY]       = "--human and --replay are mutually exclusive",
-    [V_REPLAY_FILE_MISSING]         = "replay file not found",
     [V_REPLAY_FILE_INVALID_EXT]     = "replay file must have .log extension",
     [V_REPLAY_FILE_UNREADABLE]      = "replay file is not readable",
     [V_UNEXPECTED_ARGS]             = "unexpected extra arguments",
