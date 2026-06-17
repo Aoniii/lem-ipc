@@ -29,7 +29,7 @@ typedef struct      s_data {
     bool            spectator;
     bool            human;
     bool            walls;
-    bool            replay;
+    char            *replay;
     bool            verbose;
     unsigned char   team;
     int             shm_id;

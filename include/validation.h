@@ -24,7 +24,7 @@ t_validate  validate_team(t_data *data, char **args);
 t_validate  validate_ai_level(t_data *data);
 t_validate  validate_map_size(t_data *data);
 t_validate  validate_mode_conflicts(t_data *data);
-t_validate  validate_replay_file(t_data *data, char **args);
+t_validate  validate_replay_file(t_data *data);
 const char  *validate_str(t_validate err);
 
 #endif

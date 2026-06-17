@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
         .spectator = false,
         .human = false,
         .walls = false,
-        .replay = false,
+        .replay = NULL,
         .verbose = false,
         .team = 0
     };
@@ -74,7 +74,7 @@ int main(int argc, char** argv) {
         {
             .short_opt  = 0,
             .long_opt   = "replay",
-            .flags      = OPT_LONG | TYPE_BOOLEAN,
+            .flags      = OPT_LONG | TYPE_STRING,
             .value      = &data.replay,
             .help       = "replay a recorded game from file"
         },
@@ -127,7 +127,7 @@ int main(int argc, char** argv) {
     if (!data.replay) {
         ret = game_start(&data);
     } else {
-        ret = replay_start(args[0]);
+        ret = replay_start(data.replay);
     }
 
     // Free the parsed args

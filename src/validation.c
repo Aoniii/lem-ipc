@@ -33,7 +33,7 @@ t_validate  validate_args(t_data *data, char **args) {
         return (validate);
 
     // 5. Assess the tracking log integrity file if in playback mode
-    validate = validate_replay_file(data, args);
+    validate = validate_replay_file(data);
     if (validate != V_SUCCESS)
         return (validate);
 
@@ -104,17 +104,18 @@ t_validate  validate_mode_conflicts(t_data *data) {
  * @brief Validates file accessibility, system permissions, and naming layout constraints.
  * Uses `access(..., R_OK)` to verify file readability before starting the replay loop.
  */
-t_validate  validate_replay_file(t_data *data, char **args) {
+t_validate  validate_replay_file(t_data *data) {
     char    *file;
     char    *ptr;
 
     if (!data->replay)
         return (V_SUCCESS);
 
-    if (args == NULL || args[0] == NULL)
+    file = data->replay;
+
+    if (file == NULL)
         return (V_REPLAY_FILE_MISSING);
 
-    file = args[0];
     ptr = ft_strnstr(file, FILE_EXTENSION, ft_strlen(file));
 
     // Ensure the extension exists and terminates the string footprint exactly
