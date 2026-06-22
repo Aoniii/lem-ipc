@@ -91,7 +91,11 @@ void    sem_lock(int sem_id) {
     op.sem_num = 0;
     op.sem_op = -1;
     op.sem_flg = SEM_UNDO;  // Auto-cleanup tracking flag activated
-    semop(sem_id, &op, 1);
+    while (semop(sem_id, &op, 1) == -1) {
+        if (errno == EINTR && !g_stop)
+            continue ;
+        break ;
+    }
 }
 
 /**
@@ -104,5 +108,9 @@ void    sem_unlock(int sem_id) {
     op.sem_num = 0;
     op.sem_op = 1;
     op.sem_flg = SEM_UNDO;  // Auto-cleanup tracking flag activated
-    semop(sem_id, &op, 1);
+    while (semop(sem_id, &op, 1) == -1) {
+        if (errno == EINTR)
+            continue ;
+        break ;
+    }
 }

@@ -39,6 +39,7 @@ int game_start(t_data *data) {
     if (!data->spectator) {
         data->replay_fd = replay_open(data, data->is_first);
         if (data->replay_fd == -1) {
+            ipc_cleanup(data);
             ft_printf("lemipc: error: failed to open replay file\n");
             return (1);
         }

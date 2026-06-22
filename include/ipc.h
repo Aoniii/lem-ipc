@@ -14,7 +14,7 @@
 # define SEM_MAX_RETRY  1000
 # define SHM_MAX_RETRY  1000
 
-# define LOG_COUNT  5
+# define LOG_COUNT  10
 # define LOG_WIDTH  (MAX_MAP_SIZE * 2)
 
 typedef struct s_data   t_data;

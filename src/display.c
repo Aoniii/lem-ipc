@@ -220,7 +220,7 @@ void    display_render(t_data *data, unsigned char *snapshot, t_pos *pos) {
     draw_map(data, snapshot, pos);
     draw_team_info(data, data->map_size + 2);
     draw_controls(data, data->map_size + 4);
-    draw_border(5, data->map_size + MARGIN);
+    draw_border(LOG_COUNT, data->map_size + MARGIN);
     draw_logs(data, data->map_size + MARGIN);
     refresh();
 }
