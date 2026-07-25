@@ -181,7 +181,7 @@ static int  parse_event(t_replay *replay, char *line, long *last_ms, unsigned in
     }
 
     // check team
-    if (ev->team >= MAX_TEAM) {
+    if (ev->team < 1 || ev->team > MAX_TEAM) {
         free(ev);
         return (-1);
     }
