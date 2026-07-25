@@ -72,7 +72,7 @@ int team_positions(t_data *data, t_pos *out, int max) {
 /**
  * @brief Checks if a player at a given position is eliminated by encirclement.
  * * Implements the core game logic: an agent dies if surrounded by 2 or more 
- * players of the same enemy team, or if trapped completely by walls and enemies.
+ * players of the same enemy team.
  * Evaluates all 8 neighboring directions (orthogonal and diagonal).
  */
 bool    is_circled(t_data *data, t_pos *pos) {
@@ -87,8 +87,6 @@ bool    is_circled(t_data *data, t_pos *pos) {
 	int             nx;
 	int             ny;
 	int             i;
-    int             walls = 0;
-    int             enemies = 0;
 
     header = (t_shm_header *)data->shm_ptr;
 	board = board_get(data);
@@ -112,25 +110,14 @@ bool    is_circled(t_data *data, t_pos *pos) {
 		if (tile == TILE_EMPTY || tile == data->team)
 			continue ;
 
-        if (tile == TILE_WALL) {
-            walls++;
-        } else {
+        if (tile != TILE_WALL) {
 		    counts[tile]++;
-            enemies++;
             // Core Rule: At least 2 players from the SAME enemy team are adjacent
 		    if (counts[tile] >= 2) {
                 header->kill[tile]++;
                 return (true);
             }
         }
-
-        /* * BONUS WALLS CONDITION (Non-mandatory):
-         * If wall generation is enabled, check for map-trapping.
-         * Prevents stalemates where a player hugs a corner/wall 
-         * to become unkillable by normal rules.
-         */
-        if (data->walls && ((walls >= 6 && enemies >= 1) || walls + enemies >= 8))
-            return (true);
 	}
 	return (false);
 }
