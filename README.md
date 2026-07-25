@@ -1,22 +1,26 @@
 # lem-ipc
 
+*[Version française](README.fr.md)*
+
 A multi-process battle arena where every player is a separate process. Players
 fight on a shared 2D board; teams clash until only one remains. There is **no
 `fork`** — each player is an independent invocation of the same binary, and the
 only thing they share is a System V IPC namespace.
 
-This is a 42 systems-programming project built around the three System V
-IPC primitives: **shared memory** (the board), a **semaphore** (mutual
-exclusion), and a **message queue** (team coordination).
+This is a 42 systems-programming project built around the three System V IPC
+primitives: **shared memory** (the board), a **semaphore** (mutual exclusion),
+and a **message queue** (team coordination).
 
 ## Game rules
 
-- The board is a square grid. Each non-empty tile holds a team number.
+- The board is a square grid. Each non-empty tile holds a team number, and a
+  tile holds at most one player.
 - A player **dies** when at least two enemies **of the same team** are adjacent
-  to it (the eight surrounding tiles, diagonals included).
+  to it — the eight surrounding tiles, diagonals included. Two enemies from
+  *different* teams are not enough.
+- Players see team numbers, not identities: you cannot tell two members of the
+  same team apart.
 - The **last team standing wins**.
-- With the `--walls` bonus, a player can also be trapped and killed by
-  obstacles, adding an anti-stalemate pressure to the match.
 
 The first process to start creates the shared resources and the board; the last
 one to leave destroys them.
@@ -27,9 +31,12 @@ one to leave destroys them.
 make
 ```
 
-Requirements: `gcc`, and the ncurses wide-character development headers
+Requirements: `gcc` and the ncurses wide-character development headers
 (`libncurses-dev` on Debian/Ubuntu). The build is warning-clean under
 `-Wall -Wextra -Werror`.
+
+The root `Makefile` builds `libft` by calling `libft/Makefile`, then compiles
+the project and links against `libft.a` with `-L libft -lft`.
 
 Other targets: `make clean`, `make fclean`, `make re`.
 
@@ -39,7 +46,7 @@ Other targets: `make clean`, `make fclean`, `make re`.
 ./lemipc <team> [options]
 ```
 
-`<team>` is a positive integer (1 to 16) identifying the player's team. It is
+`<team>` is an integer from 1 to 16 identifying the player's team. It is
 **required** for normal players, and **omitted** for spectators and replay
 playback.
 
@@ -52,7 +59,7 @@ playback.
 | `--human` | Control the player manually with the keyboard. |
 | `--spectator` | Watch the game read-only; no team required. |
 | `--walls` | Generate obstacles on the map, first player only. |
-| `--replay <file>` | Replay a recorded game from a log file. |
+| `--replay <file>` | Replay a recorded game from a `.log` file. |
 | `--verbose` | Print each player's actions to stdout. |
 | `--help` | Show the help list. |
 
@@ -60,8 +67,11 @@ Notes:
 
 - `--map-size` and `--walls` only take effect for the **first** player, since
   they shape the board everyone else joins.
-- `--spectator` and `--replay` cannot be combined.
+- `--human`, `--spectator` and `--replay` are mutually exclusive — no two of
+  them can be combined.
 - A human or spectator opens an ncurses display; AI players run without one.
+- Walls are terrain: they block movement and pathfinding, and they are recorded
+  in the replay file. They never kill.
 
 ### Controls
 
@@ -74,11 +84,18 @@ Notes:
 
 ## Examples
 
-A quick match with walls, several AI players, and a spectator. Launch the
-first player (the creator) first so it wins the race to set up the board:
+The quickest way to see a full match is the bundled script, which launches
+several teams, walls and a spectator in one go:
 
 ```sh
-# terminal 1 — creator sets the board, then more players join
+./test.sh
+```
+
+To do it by hand, launch the first player (the creator) first so it wins the
+race to set up the board:
+
+```sh
+# the creator sets the board, then more players join
 ./lemipc 1 --walls --map-size 15 &
 sleep 0.3
 ./lemipc 1 & ./lemipc 1 &
@@ -101,6 +118,15 @@ Replay a recorded game:
 ./lemipc --replay replay/game-20260615-193012.log
 ```
 
+When the spectator exits, it prints a summary of the match:
+
+```
+lemipc: winning team: 1
+lemipc: total turns: 70
+lemipc: the team with most kills: 1 (4)
+lemipc: game duration: 10565 ms
+```
+
 ## Verbose mode and the display
 
 Verbose output is written to **stdout**, one line per action, prefixed with the
@@ -109,8 +135,10 @@ team and PID so concurrent processes can be told apart:
 ```
 [team 1 | pid 12345] joined at (3, 7)
 [team 2 | pid 12346] moved (3,7) -> (4,7)
-[team 1 | pid 12345] eliminated
+[team 1 | pid 12345] left
 ```
+
+A player logs `left` both when it is killed and when it quits on its own.
 
 The ncurses display (`--human`, `--spectator`) draws directly on the terminal,
 so **verbose output and a display in the same terminal will interfere** with
@@ -128,14 +156,24 @@ Alternatively, run verbose processes and the spectator in separate terminals.
 
 Every game is recorded automatically to `replay/game-<date>-<time>.log`. The
 file stores the initial board (size and wall layout) followed by a timestamped,
-ordered stream of `JOIN`, `MOVE`, and `QUIT` events. Replay mode reads the file
-back, rebuilds the board step by step, and lets you scrub through the match
-forward and backward. Malformed or corrupted files are rejected at parse time
-rather than crashing the player.
+ordered stream of `JOIN`, `MOVE` and `QUIT` events:
+
+```
+MAP 10
+BOARD 0000000000000000000000000000000000...
+0 0 JOIN 1 2 0
+403 1 JOIN 2 7 3
+1005 2 MOVE 1 2 0 1 0
+```
+
+Replay mode reads the file back, rebuilds the board step by step, and lets you
+scrub through the match forward and backward. The parser validates the header,
+event ordering, ids, team numbers and move legality, so malformed or corrupted
+files are rejected up front rather than crashing the player.
 
 ## Architecture
 
-- **Shared memory** holds a header (map size, player count, timestamps,
+- **Shared memory** holds a header (map size, player count, timestamps, kill
   stats, run flags, a log ring buffer) followed by the raw board.
 - **Semaphore** guards every board read/write and stat update, so the many
   processes never step on each other. It uses the robust `sem_otime`
@@ -159,8 +197,9 @@ clear them with `ipcs` and `ipcrm -a`, and remove the lock file at
 include/        public headers
 src/            core: ipc, board, player, game, ai, bfs, display, signals…
 src/replay/     replay recorder and player
-libft/          custom libc
+libft/          custom libc (own Makefile)
 ft_printf/      custom printf
 get_next_line/  custom line reader
 parser/         CLI option parser
+test.sh         launches a full demo match
 ```
