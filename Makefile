@@ -16,10 +16,10 @@ OBJS_DIR	=	$(BUILD_DIR)/objects
 SRCS		=	$(addprefix parser/, $(PARSER_SRCS)) $(addprefix src/, $(MAIN_SRCS))
 OBJS_PATH	=	$(patsubst %.c,$(OBJS_DIR)/%.o,$(SRCS))
 
-LIBFT_NAME			=	$(BUILD_DIR)/libft.a
 LIBFT_DIR			=	libft
+LIBFT_NAME			=	$(LIBFT_DIR)/libft.a
 LIBFT_SRCS			=	$(addprefix $(LIBFT_DIR)/, $(_LIBFT_SRCS))
-LIBFT_OBJS_PATH		=	$(patsubst $(LIBFT_DIR)/%.c,$(OBJS_DIR)/$(LIBFT_DIR)/%.o,$(LIBFT_SRCS))
+LIBFT_LINK			=	-L $(LIBFT_DIR) -lft
 
 PRINTF_NAME			=	$(BUILD_DIR)/libftprintf.a
 PRINTF_DIR			=	ft_printf
@@ -45,22 +45,8 @@ TOTAL_FILES_LIBFT	=	$(words $(LIBFT_SRCS))
 TOTAL_FILES_PRINTF	=	$(words $(PRINTF_SRCS))
 TOTAL_FILES			=	$(words $(SRCS))
 
-$(OBJS_DIR)/$(LIBFT_DIR)/%.o: $(LIBFT_DIR)/%.c
-	@mkdir -p $(@D)
-	@if [ ! -f .count1 ]; then echo 0 > .count1; fi
-	@COUNT=$$(($$(cat .count1) + 1)); \
-	echo $$COUNT > .count1; \
-	PERCENT=$$(($$COUNT * 100 / $(TOTAL_FILES_LIBFT))); \
-	printf "$(CUT)$(RESET)[$(YELLOW)%3d%%$(RESET)] 🎖️ Training Stormtroopers:$(RESET) %s\n" $$PERCENT $(notdir $<)
-	@$(CC) $(CFLAGS) -I $(LIBFT_DIR) -c $< -o $@
-	@printf "$(UP)"
-
-$(LIBFT_NAME): $(LIBFT_OBJS_PATH)
-	@printf "$(RESET)[$(GREEN)DONE$(RESET)] ⚔️ $(CYAN)Imperial Academy training complete.$(RESET)$(CUT)\n"
-	@mkdir -p $(@D)
-	@ar rcs $(LIBFT_NAME) $(LIBFT_OBJS_PATH)
-	@rm -f .count1
-	@printf "$(RESET)[$(GREEN)DONE$(RESET)] 🛡️ $(BLUE)The $(notdir $(LIBFT_NAME)) are ready for your command.$(RESET)$(CUT)\n"
+$(LIBFT_NAME): $(LIBFT_SRCS)
+	@$(MAKE) -C $(LIBFT_DIR) --no-print-directory
 
 $(OBJS_DIR)/$(PRINTF_DIR)/%.o: $(PRINTF_DIR)/%.c
 	@mkdir -p $(@D)
@@ -92,7 +78,7 @@ $(OBJS_DIR)/%.o: %.c
 $(NAME): $(LIBFT_NAME) $(PRINTF_NAME) $(OBJS_PATH)
 	@printf "$(RESET)[$(GREEN)DONE$(RESET)] 🌩️ $(CYAN)Commence primary ignition!$(RESET)$(CUT)\n"
 	@$(CC) $(CFLAGS) $(OBJS_PATH) $(LIBFT_NAME) $(PRINTF_NAME) -o $(NAME) -lncursesw
-	@rm -f .count1 .count2 .count3
+	@rm -f .count2 .count3
 	@printf "$(RESET)[$(GREEN)DONE$(RESET)] 🛰️ $(BLUE)$(NAME) is fully operational!$(RESET)$(CUT)\n"
 
 all:
@@ -103,11 +89,13 @@ all:
 	fi
 
 clean:
-	@rm -f .count1 .count2 .count3
+	@$(MAKE) -C $(LIBFT_DIR) clean --no-print-directory
+	@rm -f .count2 .count3
 	@rm -rf $(OBJS_DIR)
 	@printf "$(RESET)[$(GREEN)DONE$(RESET)] 🧹 $(YELLOW)Sweeping the sector for rebel scum.$(RESET)\n"
 
 fclean: clean
+	@$(MAKE) -C $(LIBFT_DIR) fclean --no-print-directory
 	@rm -rf $(BUILD_DIR) $(NAME)
 	@printf "$(RESET)[$(GREEN)DONE$(RESET)] 💥 $(RED)The planet has been obliterated.$(RESET)\n"
 
