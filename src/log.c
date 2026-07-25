@@ -1,5 +1,6 @@
 #include "ipc.h"
 #include "lem-ipc.h"
+#include "print.h"
 #include <stdarg.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -43,6 +44,6 @@ void    verbose_log(t_data *data, const char *fmt, ...) {
 	va_start(ap, fmt);
 	vsnprintf(buf, sizeof(buf), fmt, ap);
 	va_end(ap);
-	printf("[team %d | pid %d] %s\n", data->team, getpid(), buf);
+	ft_printf("[team %d | pid %d] %s\n", data->team, getpid(), buf);
 	fflush(stdout);
 }
