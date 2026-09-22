@@ -1,27 +1,14 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   ft_strmapi.c                                       :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: snourry <marvin@42.fr>                     +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/04/01 01:20:16 by snourry           #+#    #+#             */
-/*   Updated: 2022/04/01 01:20:16 by snourry          ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "libft.h"
 
 /**
- * @brief Applies the 'f' function to each character in the string passed as
- * an argument to create a new string.
- * 
+ * @brief Applies the 'f' function to each character in the string passed as an
+ * argument to create a new string.
+ *
  * @param s The string to iterate on.
  * @param f The function to be applied to each character.
  * @return (char*) The string resulting from the successive applications of 'f'.
  */
-char	*ft_strmapi(char const *s, char (*f) (unsigned int, char))
-{
+char    *ft_strmapi(char const *s, char (*f) (unsigned int, char)) {
 	char	*str;
 	int		i;
 

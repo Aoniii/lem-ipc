@@ -1,27 +1,13 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   get_next_line_utils_bonus.c                        :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: snourry <marvin@42.fr>                     +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/04/06 09:34:03 by snourry           #+#    #+#             */
-/*   Updated: 2022/04/15 12:11:26 by snourry          ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
-#include "get_next_line_bonus.h"
 #include <stdlib.h>
+#include "get_next_line_bonus.h"
 
-char	*ft_strjoin_gnl(char *s1, char *s2, size_t limit)
-{
+char *ft_strjoin_gnl(char *s1, char *s2, size_t limit) {
 	char	*ptr;
 	size_t	i;
 	size_t	j;
 
 	i = -1;
-	if (!s1)
-	{
+	if (!s1) {
 		s1 = (char *)malloc(1 * sizeof(char));
 		*s1 = 0;
 	}
@@ -40,9 +26,8 @@ char	*ft_strjoin_gnl(char *s1, char *s2, size_t limit)
 	return (ptr);
 }
 
-size_t	ft_size(char *s)
-{
-	size_t	i;
+size_t ft_size(char *s) {
+	size_t i;
 
 	i = 0;
 	while (s[i] && s[i] != '\n')

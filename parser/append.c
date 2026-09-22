@@ -1,9 +1,9 @@
-#include "parser.h"
 #include <stdlib.h>
 #include <string.h>
+#include "parser.h"
 
-char	**append_arg(char **args, char *new_arg, t_parser_ctx *ctx) {
-	int	size = 0;
+char **append_arg(char **args, char *new_arg, t_parser_ctx *ctx) {
+	int size = 0;
 	if (args)
 		while (args[size])
 			size++;
@@ -13,7 +13,7 @@ char	**append_arg(char **args, char *new_arg, t_parser_ctx *ctx) {
 		return (args);
 	}
 
-	char	**new = realloc(args, sizeof(char *) * (size + 2));
+	char **new = realloc(args, sizeof(char *) * (size + 2));
 	if (!new) {
 		ctx->err = ERR_MALLOC_FAILED;
 		return (args);
@@ -26,7 +26,6 @@ char	**append_arg(char **args, char *new_arg, t_parser_ctx *ctx) {
 		return (new);
 	}
 	new[size + 1] = NULL;
-	
+
 	return (new);
 }
-

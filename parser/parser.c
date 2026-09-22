@@ -1,6 +1,6 @@
-#include "parser.h"
-#include "libft.h"
 #include <stdbool.h>
+#include "libft.h"
+#include "parser.h"
 
 static const t_option	*find_long_option(const t_option *options, char *key);
 static const t_option	*find_short_option(const t_option *options, char c);
@@ -8,37 +8,36 @@ static const t_option	*find_short_option(const t_option *options, char c);
 /**
  * @brief Command-line argument parsing engine.
  *
- * * Walks through argv and interprets each token according to a
- *   configuration table (t_option).
- * * Supports:
- *   - Long options:		--flag, --flag=value
- *   - Short options:		-f, -abc (bundled)  [implementation dependent]
- *   - Positional arguments mixed with options, depending on mode.
+ * Walks through argv and interprets each token according to a configuration
+ * table (t_option). Supports: - Long options: --flag, --flag=value - Short
+ * options: -f, -abc (bundled) [implementation dependent] - Positional arguments
+ * mixed with options, depending on mode.
  *
- * @param argc		Argument count from main.
- * @param argv		Argument vector from main.
- * @param options	Pointer to a sentinel-terminated t_option array
- *					describing all supported flags.
- * @param mode		Parsing mode:
- *					- MODE_STRICT: stop option parsing at the first
- *					positional argument.
- *					- MODE_PERMISSIVE: allow options and positionals
- *					to be interleaved.
- * @param ctx		Output parameter for error reporting. Set to
- *					PARSER_SUCCESS on success, or one of the errors defined in t_parser_error.
+ * @param argc Argument count from main.
+ * @param argv Argument vector from main.
+ * @param options Pointer to a sentinel-terminated t_option array describing all
+ * supported flags.
+ * @param mode Parsing mode: - MODE_STRICT: stop option parsing at the first
+ * positional argument. - MODE_PERMISSIVE: allow options and positionals to be
+ * interleaved.
+ * @param ctx Output parameter for error reporting. Set to PARSER_SUCCESS on
+ * success, or one of the errors defined in t_parser_error.
  *
- * @return char**	A NULL-terminated, heap-allocated array of positional
- *					arguments on success, or NULL on critical error. The caller is responsible for freeing this array (see cleaner()).
+ * @return char** A NULL-terminated, heap-allocated array of positional
+ * arguments on success, or NULL on critical error. The caller is responsible
+ * for freeing this array (see cleaner()).
  *
- * @note	The special token "--" stops option parsing and forces all remaining tokens to be treated as positional arguments, regardless of the current mode.
+ * @note The special token "--" stops option parsing and forces all remaining
+ * tokens to be treated as positional arguments, regardless of the current mode.
  */
-char	**parser(int argc, char **argv, const t_option *options, int mode, t_parser_ctx *ctx) {
+char    **parser(int argc, char **argv, const t_option *options, int mode,
+	t_parser_ctx *ctx) {
 	int		index = 1;
 	bool	force_arg = false;
 	char	**args = NULL;
 
 	while (index < argc) {
-		char	*token = argv[index];
+		char *token = argv[index];
 
 		if (ctx->err == CALLBACK_EXIT)
 			return (args);
@@ -48,7 +47,7 @@ char	**parser(int argc, char **argv, const t_option *options, int mode, t_parser
 		ctx->value = NULL;
 
 		if (force_arg) {
-			char	**tmp = append_arg(args, token, ctx);
+			char **tmp = append_arg(args, token, ctx);
 			if (ctx->err == ERR_MALLOC_FAILED) return (tmp ? tmp : args);
 			args = tmp;
 
@@ -65,9 +64,9 @@ char	**parser(int argc, char **argv, const t_option *options, int mode, t_parser
 
 		/**		Long option parsing			*/
 		if (ft_strlen(token) > 2 && ft_strncmp(token, "--", 2) == 0) {
-			char *key = token + 2;
-			char *equal_pos = ft_strchr(token, '=');
-			char *value = NULL;
+			char	*key = token + 2;
+			char	*equal_pos = ft_strchr(token, '=');
+			char	*value = NULL;
 
 			if (equal_pos) {
 				*equal_pos = '\0';
@@ -83,7 +82,9 @@ char	**parser(int argc, char **argv, const t_option *options, int mode, t_parser
 				return (args);
 			}
 
-			if (!equal_pos && (opt->flags & (TYPE_INT | TYPE_STRING | TYPE_UINT | TYPE_DOUBLE))) {
+			if (!equal_pos &&
+				(opt->flags &
+				(TYPE_INT | TYPE_STRING | TYPE_UINT | TYPE_DOUBLE))) {
 				if (index + 1 < argc) {
 					value = argv[++index];
 				} else {
@@ -102,10 +103,10 @@ char	**parser(int argc, char **argv, const t_option *options, int mode, t_parser
 
 		/**		Short option parsing			*/
 		if (ft_strlen(token) > 1 && token[0] == '-') {
-			char	*p = token + 1;
+			char *p = token + 1;
 
 			while (*p) {
-				const t_option	*opt = find_short_option(options, *p);
+				const t_option *opt = find_short_option(options, *p);
 				ctx->opt = opt;
 
 				if (!opt) {
@@ -113,8 +114,9 @@ char	**parser(int argc, char **argv, const t_option *options, int mode, t_parser
 					return (args);
 				}
 
-				char	*value = NULL;
-				if (opt->flags & (TYPE_INT | TYPE_UINT | TYPE_STRING | TYPE_DOUBLE)) {
+				char *value = NULL;
+				if (opt->flags &
+					(TYPE_INT | TYPE_UINT | TYPE_STRING | TYPE_DOUBLE)) {
 					if (*(p + 1)) {
 						value = p + 1;
 						assign(opt, value, ctx);
@@ -128,7 +130,7 @@ char	**parser(int argc, char **argv, const t_option *options, int mode, t_parser
 						return (args);
 					}
 				} else {
-					assign(opt, value, ctx);	
+					assign(opt, value, ctx);
 				}
 
 				if (ctx->err != PARSER_SUCCESS)
@@ -140,7 +142,7 @@ char	**parser(int argc, char **argv, const t_option *options, int mode, t_parser
 			continue;
 		}
 
-		char	**tmp = append_arg(args, token, ctx);
+		char **tmp = append_arg(args, token, ctx);
 		if (ctx->err == ERR_MALLOC_FAILED) return (tmp ? tmp : args);
 		args = tmp;
 
@@ -151,7 +153,7 @@ char	**parser(int argc, char **argv, const t_option *options, int mode, t_parser
 	return (args);
 }
 
-static const t_option	*find_long_option(const t_option *options, char *key) {
+static const t_option   *find_long_option(const t_option *options, char *key) {
 	while (options) {
 		if (options->flags == 0 && !options->short_opt && !options->long_opt)
 			break;
@@ -161,14 +163,15 @@ static const t_option	*find_long_option(const t_option *options, char *key) {
 		}
 		if (options->flags & OPT_LONG)
 			if (options->long_opt)
-				if (ft_strncmp(options->long_opt, key, ft_strlen(options->long_opt) + 1) == 0)
+				if (ft_strncmp(options->long_opt, key,
+					ft_strlen(options->long_opt) + 1) == 0)
 					return (options);
 		options++;
 	}
 	return (NULL);
 }
 
-static const t_option	*find_short_option(const t_option *options, char c) {
+static const t_option   *find_short_option(const t_option *options, char c) {
 	while (options) {
 		if (options->flags == 0 && !options->short_opt && !options->long_opt)
 			break;

@@ -1,19 +1,6 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   ft_realloc.c                                       :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: snourry <snourry@student.42.fr>            +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/05/10 11:43:11 by snourry           #+#    #+#             */
-/*   Updated: 2023/05/10 11:43:11 by snourry          ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "ft_printf.h"
 
-char	*ft_realloc(char *str, int r, int l, char c)
-{
+char *ft_realloc(char *str, int r, int l, char c) {
 	char	*new;
 	int		i;
 	int		j;
@@ -25,8 +12,7 @@ char	*ft_realloc(char *str, int r, int l, char c)
 	i = 0;
 	while (i < r)
 		new[i++] = c;
-	while (i - r < j)
-	{
+	while (i - r < j) {
 		new[i] = str[i - r];
 		i++;
 	}

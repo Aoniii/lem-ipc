@@ -5,4 +5,3 @@ PARSER_SRCS	+=	debug.c
 PARSER_SRCS	+=	error.c
 PARSER_SRCS	+=	help.c
 PARSER_SRCS	+=	parser.c
-

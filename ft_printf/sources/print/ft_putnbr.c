@@ -1,25 +1,12 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   ft_putnbr.c                                        :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: snourry <snourry@student.42.fr>            +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/04/08 14:47:21 by snourry           #+#    #+#             */
-/*   Updated: 2023/04/08 14:47:21 by snourry          ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "ft_printf.h"
 
-static char	*apply_symbol(t_flag flag, char *out, long nbr)
-{
-	int	i;
+static char *apply_symbol(t_flag flag, char *out, long nbr) {
+	int i;
 
 	if (!(nbr < 0 || flag.space || flag.plus))
 		return (out);
 	if ((out[0] != ' ' && out[0] != '0') || !out[1] || \
-	flag.precision == (int) ft_strlen(out))
+		flag.precision == (int) ft_strlen(out))
 		out = ft_realloc(out, 1, 0, ' ');
 	i = 0;
 	while (out[i] == ' ')
@@ -35,8 +22,7 @@ static char	*apply_symbol(t_flag flag, char *out, long nbr)
 	return (out);
 }
 
-int	ft_putnbr(t_flag flag, long nbr)
-{
+int ft_putnbr(t_flag flag, long nbr) {
 	char	*out;
 	int		size;
 

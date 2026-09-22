@@ -1,20 +1,7 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   print.c                                            :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: snourry <snourry@student.42.fr>            +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/04/08 14:43:26 by snourry           #+#    #+#             */
-/*   Updated: 2023/04/08 14:43:26 by snourry          ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "ft_printf.h"
 
-int	print(va_list args, char **format, t_flag flag)
-{
-	int	size;
+int print(va_list args, char **format, t_flag flag) {
+	int size;
 
 	size = 0;
 	if (**format == 'c')

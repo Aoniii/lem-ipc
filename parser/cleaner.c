@@ -1,7 +1,7 @@
 #include <stdlib.h>
 
-void	cleaner(char **args) {
-	int	index = 0;
+void cleaner(char **args) {
+	int index = 0;
 
 	if (!args)
 		return;

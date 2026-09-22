@@ -1,20 +1,7 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   ft_strtrim.c                                       :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: snourry <marvin@42.fr>                     +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/03/30 23:35:59 by snourry           #+#    #+#             */
-/*   Updated: 2022/03/30 23:35:59 by snourry          ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "libft.h"
 
-static int	ft_ischarset(char c, const char *set)
-{
-	size_t	i;
+static int ft_ischarset(char c, const char *set) {
+	size_t i;
 
 	i = -1;
 	while (set[++i])
@@ -25,13 +12,12 @@ static int	ft_ischarset(char c, const char *set)
 
 /**
  * @brief Allows and returns a copy of the string.
- * 
+ *
  * @param s1 The string to be trimmed.
  * @param set The reference set of characters to be trimmed.
  * @return (char*) The trimmed string.
  */
-char	*ft_strtrim(char const *s1, char const *set)
-{
+char    *ft_strtrim(char const *s1, char const *set) {
 	char	*ptr;
 	int		i;
 	int		j;

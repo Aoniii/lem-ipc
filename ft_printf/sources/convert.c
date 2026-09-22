@@ -1,20 +1,7 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   convert.c                                          :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: snourry <snourry@student.42.fr>            +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/04/08 14:42:03 by snourry           #+#    #+#             */
-/*   Updated: 2023/04/08 14:42:03 by snourry          ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "ft_printf.h"
 
-static t_flag	flag_init(void)
-{
-	t_flag	flag;
+static t_flag flag_init(void) {
+	t_flag flag;
 
 	flag.space = false;
 	flag.hashtag = false;
@@ -26,8 +13,7 @@ static t_flag	flag_init(void)
 	return (flag);
 }
 
-int	convert(va_list args, char **format)
-{
+int convert(va_list args, char **format) {
 	t_flag	flag;
 	int		size;
 

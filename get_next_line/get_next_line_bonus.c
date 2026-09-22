@@ -1,21 +1,8 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   get_next_line_bonus.c                              :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: snourry <marvin@42.fr>                     +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/04/06 09:28:06 by snourry           #+#    #+#             */
-/*   Updated: 2022/04/15 10:28:33 by snourry          ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
-#include "get_next_line_bonus.h"
-#include <unistd.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include "get_next_line_bonus.h"
 
-static char	*ft_read(int fd, char *backup)
-{
+static char *ft_read(int fd, char *backup) {
 	char		*buffer;
 	long long	i;
 
@@ -24,11 +11,9 @@ static char	*ft_read(int fd, char *backup)
 		return (0);
 	i = 1;
 	*buffer = 0;
-	while (!ft_strchr(buffer, '\n') && i)
-	{
+	while (!ft_strchr(buffer, '\n') && i) {
 		i = read(fd, buffer, BUFFER_SIZE);
-		if (i < 0)
-		{
+		if (i < 0) {
 			free(buffer);
 			buffer = 0;
 			return (0);
@@ -41,13 +26,11 @@ static char	*ft_read(int fd, char *backup)
 	return (backup);
 }
 
-static char	*ft_free_backup(char *backup, size_t i)
-{
+static char *ft_free_backup(char *backup, size_t i) {
 	char	*new;
 	size_t	j;
 
-	if (!i)
-	{
+	if (!i) {
 		free(backup);
 		backup = 0;
 		return (0);
@@ -64,8 +47,7 @@ static char	*ft_free_backup(char *backup, size_t i)
 	return (new);
 }
 
-static char	*ft_get_line(char *backup)
-{
+static char *ft_get_line(char *backup) {
 	char	*line;
 	size_t	i;
 
@@ -83,9 +65,8 @@ static char	*ft_get_line(char *backup)
 	return (line);
 }
 
-char	*get_next_line(int fd)
-{
-	static char	*backup[1024];
+char    *get_next_line(int fd) {
+	static char *backup[1024];
 	char		*line;
 
 	if ((fd < 0 || fd > 1023) && BUFFER_SIZE < 1)

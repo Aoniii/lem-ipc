@@ -1,20 +1,7 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   ft_puthexa.c                                       :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: snourry <snourry@student.42.fr>            +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/04/08 14:46:34 by snourry           #+#    #+#             */
-/*   Updated: 2023/04/08 14:46:34 by snourry          ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "ft_printf.h"
 
-static char	*apply_symbol(t_flag flag, char *out, char *base, long nbr)
-{
-	int	i;
+static char *apply_symbol(t_flag flag, char *out, char *base, long nbr) {
+	int i;
 
 	if (!flag.hashtag || nbr == 0)
 		return (out);
@@ -31,8 +18,7 @@ static char	*apply_symbol(t_flag flag, char *out, char *base, long nbr)
 	return (out);
 }
 
-int	ft_puthexa(t_flag flag, unsigned long long nbr, char *base)
-{
+int ft_puthexa(t_flag flag, unsigned long long nbr, char *base) {
 	char	*out;
 	int		size;
 
