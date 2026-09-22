@@ -39,10 +39,10 @@ endif
 	@printf "$(UP)"
 
 $(NAME): $(OBJS)
-	@printf "$(RESET)[$(GREEN)DONE$(RESET)] ⚔️ $(CYAN)Imperial Academy training complete.$(RESET)$(CUT)\n"
+	@printf "$(RESET)[$(GREEN)DONE$(RESET)] ⚔️  $(CYAN)Imperial Academy training complete.$(RESET)$(CUT)\n"
 	@$(AR) $(ARFLAGS) $(NAME) $(OBJS)
 	@rm -f .count
-	@printf "$(RESET)[$(GREEN)DONE$(RESET)] 🛡️ $(BLUE)$(NAME) is ready for your command.$(RESET)$(CUT)\n"
+	@printf "$(RESET)[$(GREEN)DONE$(RESET)] 🛡️  $(BLUE)$(NAME) is ready for your command.$(RESET)$(CUT)\n"
 
 all: $(NAME)
 

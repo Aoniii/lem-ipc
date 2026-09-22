@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include "get_next_line_bonus.h"
 #include "lem-ipc.h"
+#include "libft.h"
 #include "replay.h"
 
 static void free_split(char **split) {

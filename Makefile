@@ -76,14 +76,14 @@ $(OBJS_DIR)/%.o: %.c
 	@printf "$(UP)"
 
 $(NAME): $(LIBFT_NAME) $(PRINTF_NAME) $(OBJS_PATH)
-	@printf "$(RESET)[$(GREEN)DONE$(RESET)] 🌩️ $(CYAN)Commence primary ignition!$(RESET)$(CUT)\n"
+	@printf "$(RESET)[$(GREEN)DONE$(RESET)] 🌩️  $(CYAN)Commence primary ignition!$(RESET)$(CUT)\n"
 	@$(CC) $(CFLAGS) $(OBJS_PATH) $(LIBFT_NAME) $(PRINTF_NAME) -o $(NAME) -lncursesw
 	@rm -f .count2 .count3
-	@printf "$(RESET)[$(GREEN)DONE$(RESET)] 🛰️ $(BLUE)$(NAME) is fully operational!$(RESET)$(CUT)\n"
+	@printf "$(RESET)[$(GREEN)DONE$(RESET)] 🛰️  $(BLUE)$(NAME) is fully operational!$(RESET)$(CUT)\n"
 
 all:
 	@if $(MAKE) -q $(NAME) --no-print-directory; then \
-		printf "$(RESET)[$(GREEN)DONE$(RESET)] 🛰️ $(BLUE)The Death Star is already at full power, My Lord.$(RESET)\n"; \
+		printf "$(RESET)[$(GREEN)DONE$(RESET)] 🛰️  $(BLUE)The Death Star is already at full power, My Lord.$(RESET)\n"; \
 	else \
 		$(MAKE) $(NAME) --no-print-directory; \
 	fi

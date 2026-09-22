@@ -77,6 +77,8 @@ int create_replay_file(t_data *data) {
 	// name unique when two games happen to be created in the same second.
 	now = time(NULL);
 	t = localtime(&now);
+	if (!t)
+		return (-1);
 	len = snprintf(header->replay_path, sizeof(header->replay_path),
 		"%s/game-%04d%02d%02d-%02d%02d%02d-%d" FILE_EXTENSION,
 		dir, t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
