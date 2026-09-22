@@ -15,6 +15,32 @@ static void free_split(char **split) {
 	free(split);
 }
 
+// removes the trailing newline kept by get_next_line
+static void strip_newline(char *line) {
+	int i;
+
+	i = 0;
+	while (line[i] && line[i] != '\n')
+		i++;
+	line[i] = '\0';
+}
+
+/**
+ * @brief Reads the file up to EOF and throws the lines away.
+ *
+ * get_next_line() keeps an internal buffer alive for the fd until it reaches
+ * EOF, so every early exit has to drain it to avoid leaking that buffer.
+ */
+static void gnl_drain(int fd) {
+	char *line;
+
+	line = get_next_line(fd);
+	while (line) {
+		free(line);
+		line = get_next_line(fd);
+	}
+}
+
 /**
  * @brief Parses the replay header: "MAP <size>" and "BOARD <0/1...>".
  *
@@ -31,10 +57,12 @@ static int parse_header(t_replay *replay, int fd) {
 	if (!line)
 		return (-1);
 
+	strip_newline(line);
 	parts = ft_split(line, ' ');
 	free(line);
-	if (!parts || !parts[0] || !parts[1] || ft_strncmp(parts[0], "MAP",
-		ft_strlen(parts[0])) != 0) {
+	// "MAP" and nothing but "MAP <size>" (the 4th byte compared is the '\0')
+	if (!parts || !parts[0] || !parts[1] || parts[2] || ft_strncmp(parts[0],
+		"MAP", 4) != 0) {
 		free_split(parts);
 		return (-1);
 	}
@@ -49,15 +77,11 @@ static int parse_header(t_replay *replay, int fd) {
 	if (!line)
 		return (-1);
 
-	i = 0;
-	while (line[i] && line[i] != '\n')
-		i++;
-	line[i] = 0;
-
+	strip_newline(line);
 	parts = ft_split(line, ' ');
 	free(line);
-	if (!parts || !parts[0] || !parts[1] || ft_strncmp(parts[0], "BOARD",
-		ft_strlen(parts[0])) != 0) {
+	if (!parts || !parts[0] || !parts[1] || parts[2] || ft_strncmp(parts[0],
+		"BOARD", 6) != 0) {
 		free_split(parts);
 		return (-1);
 	}
@@ -135,6 +159,7 @@ static int parse_event(t_replay *replay, char *line, long *last_ms,
 	t_event *ev;
 	int		type;
 
+	strip_newline(line);
 	p = ft_split(line, ' ');
 	if (!p || !p[0] || !p[1] || !p[2] || !p[3] || !p[4] || !p[5]) {
 		free_split(p);
@@ -147,8 +172,12 @@ static int parse_event(t_replay *replay, char *line, long *last_ms,
 		return (-1);
 	}
 
-	// MOVE needs two extra fields (dx dy)
-	if (type == EV_MOVE && (!p[6] || !p[7])) {
+	// MOVE needs two extra fields (dx dy), the others must stop at <y>
+	if (type == EV_MOVE && (!p[6] || !p[7] || p[8])) {
+		free_split(p);
+		return (-1);
+	}
+	if (type != EV_MOVE && p[6]) {
 		free_split(p);
 		return (-1);
 	}
@@ -220,15 +249,19 @@ int replay_parse(t_replay *replay, int fd) {
 	long			last_ms;
 	unsigned int	next_id;
 
-	if (parse_header(replay, fd) == -1)
+	if (parse_header(replay, fd) == -1) {
+		gnl_drain(fd);
 		return (-1);
+	}
 
 	last_ms = 0;
 	next_id = 0;
 	line = get_next_line(fd);
 	while (line) {
-		if (parse_event(replay, line, &last_ms, &next_id) == -1) {
+		if (line[0] != '\n' && parse_event(replay, line, &last_ms,
+			&next_id) == -1) {
 			free(line);
+			gnl_drain(fd);
 			return (-1);
 		}
 		free(line);
