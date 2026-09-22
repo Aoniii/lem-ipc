@@ -31,7 +31,8 @@ int main(int argc, char **argv) {
 		.walls = false,
 		.replay = NULL,
 		.verbose = false,
-		.team = 0
+		.team = 0,
+		.replay_fd = -1
 	};
 
 	// CLI options
@@ -118,6 +119,7 @@ int main(int argc, char **argv) {
 	t_validate validate = validate_args(&data, args);
 	if (validate != V_SUCCESS) {
 		ft_printf("lemipc: error: %s\n", validate_str(validate));
+		cleaner(args);
 		return (1);
 	}
 
@@ -138,5 +140,6 @@ int main(int argc, char **argv) {
 
 	// Free the parsed args
 	cleaner(args);
-	return (ret);
+	// any failure exits with 1
+	return (ret != 0);
 }

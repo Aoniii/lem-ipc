@@ -1,5 +1,6 @@
 #include <ncurses.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include "ai.h"
 #include "board.h"
 #include "display.h"
@@ -11,6 +12,17 @@
 #include "player.h"
 #include "print.h"
 #include "replay.h"
+
+/**
+ * @brief Releases the replay file descriptor and every IPC resource.
+ */
+static void game_cleanup(t_data *data) {
+	if (data->replay_fd != -1) {
+		close(data->replay_fd);
+		data->replay_fd = -1;
+	}
+	ipc_cleanup(data);
+}
 
 /**
  * @brief Main entry point to initialize, run, and clean up a game session.
@@ -37,9 +49,9 @@ int game_start(t_data *data) {
 
 	// 2. Connect player to the replay file
 	if (!data->spectator) {
-		data->replay_fd = replay_open(data, data->is_first);
+		data->replay_fd = replay_open(data);
 		if (data->replay_fd == -1) {
-			ipc_cleanup(data);
+			game_cleanup(data);
 			ft_printf("lemipc: error: failed to open replay file\n");
 			return (1);
 		}
@@ -48,7 +60,7 @@ int game_start(t_data *data) {
 	// 3. Initialize display framework if running as human or spectator
 	if (show_display) {
 		if (display_init(data) != 0) {
-			ipc_cleanup(data);
+			game_cleanup(data);
 			ft_printf(
 				"lemipc: error: display init failed (terminal too small?)\n");
 			return (1);
@@ -57,13 +69,12 @@ int game_start(t_data *data) {
 
 	// 4. Connect player to the grid (Spectators skip this step)
 	if (!data->spectator) {
-		if (player_place(data, &pos) == -1) {
+		if (player_join(data, &pos) == -1) {
 			if (show_display) display_destroy();
-			ipc_cleanup(data);
+			game_cleanup(data);
 			ft_printf("lemipc: error: board is full\n");
 			return (1);
 		}
-		player_join(data, pos);
 	}
 
 	// 5. Fire up the core loop execution state
@@ -92,7 +103,7 @@ int game_start(t_data *data) {
 			now_ms() - header->start_ms);
 		sem_unlock(data->sem_id);
 	}
-	ipc_cleanup(data);
+	game_cleanup(data);
 	return (ret);
 }
 
@@ -106,7 +117,10 @@ static bool check_death(t_data *data, t_pos *pos, t_shm_header *header) {
 		return (false);
 
 	// Player is dead: clear tile, update local status, and check for match end
+	// The QUIT event is recorded here, under the same lock, so the replay never
+	// sees another player step on a tile we have not released yet.
 	board_set_empty(data, *pos);
+	replay_quit(data, *pos);
 	data->is_alive = false;
 	if (is_game_over(data)) {
 		// Notify all processes that the match is over
@@ -225,16 +239,9 @@ int game_loop(t_data *data, bool show_display, t_pos *pos) {
 
 	// --- CLEANUP EXIT SEQUENCE ---
 	// If player leaves or gets killed, remove them cleanly from the system
-	if (!data->spectator) {
-		if (data->is_alive) {
-			sem_lock(data->sem_id);
-			// Clear my tile
-			board_set_empty(data, *pos);
-			sem_unlock(data->sem_id);
-		}
-		// Log the exit (player_count is decremented in ipc_cleanup)
-		player_quit(data, *pos);
-	}
+	// (player_count is decremented in ipc_cleanup)
+	if (!data->spectator)
+		player_quit(data, *pos, data->is_alive);
 
 	if (show_display)
 		free(snapshot);

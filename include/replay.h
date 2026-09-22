@@ -38,7 +38,7 @@ typedef struct s_replay {
 }	t_replay;
 
 int		create_replay_file(t_data *data);
-int		replay_open(t_data *data, bool write_header);
+int		replay_open(t_data *data);
 void	replay_event(t_data *data, const char *name, t_pos pos);
 void	replay_join(t_data *data, t_pos pos);
 void	replay_quit(t_data *data, t_pos pos);

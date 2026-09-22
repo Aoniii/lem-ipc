@@ -1,9 +1,13 @@
 #include <locale.h>
 #include <ncurses.h>
+#include <stdio.h>
 #include <sys/time.h>
 #include "display.h"
 #include "ipc.h"
 #include "lem-ipc.h"
+
+// Current ncurses screen, kept so it can be released with delscreen()
+static SCREEN *g_screen = NULL;
 
 // Standard terminal colors array used to dynamically generate team visual
 // styles
@@ -55,34 +59,59 @@ void init_team_colors(void) {
  * initializes color pairs, and verifies if the terminal window size is large
  * enough to render the grid layout, logs section, and status margins safely.
  */
-int display_init(t_data *data) {
-	int max_y;
-	int max_x;
-	int needed_y;
-	int needed_x;
-
+/**
+ * @brief Boots the ncurses environment, locale settings and team colors.
+ *
+ * newterm() is used instead of initscr() so the SCREEN handle can be given back
+ * to ncurses with delscreen() on exit: otherwise every internal buffer it
+ * allocates stays around until the process dies.
+ */
+int curses_start(void) {
 	// Required for rendering UTF-8 box characters
 	setlocale(LC_ALL, "");
-	initscr();
+
+	if (g_screen)
+		return (0);
+	g_screen = newterm(NULL, stdout, stdin);
+	if (!g_screen)
+		return (-1);
+
+	set_term(g_screen);
 	// Do not echo user keystrokes to screen
 	noecho();
 	// Hide the hardware text cursor
 	curs_set(0);
 
 	if (has_colors() == FALSE) {
-		endwin();
+		display_destroy();
 		return (-1);
 	}
 
 	start_color();
 	init_team_colors();
+	return (0);
+}
+
+/**
+ * @brief Initializes the display for a game session.
+ *
+ * Boots ncurses, then verifies the terminal window is large enough.
+ */
+int display_init(t_data *data) {
+	int max_y;
+	int max_x;
+	int needed_y;
+	int needed_x;
+
+	if (curses_start() == -1)
+		return (-1);
 
 	// Screen dimension guard check
 	getmaxyx(stdscr, max_y, max_x);
 	needed_y = data->map_size + LOG_COUNT + MARGIN + 4;
 	needed_x = MAX_MAP_SIZE * 2 + 2;
 	if (max_y < needed_y || max_x < needed_x) {
-		endwin();
+		display_destroy();
 		return (-1);
 	}
 
@@ -241,5 +270,10 @@ void display_render(t_data *data, unsigned char *snapshot, t_pos *pos) {
  * settings.
  */
 void display_destroy(void) {
+	if (!g_screen)
+		return;
 	endwin();
+	// delscreen() frees everything newterm() allocated
+	delscreen(g_screen);
+	g_screen = NULL;
 }

@@ -96,13 +96,19 @@ static t_event  *replay_last(t_replay *replay) {
 }
 
 // skips to the next event
-static int step_forward(t_replay *replay) {
-	if (!replay->current)
+static int step_forward(t_replay *replay, bool sync_clock) {
+	t_event	*ev;
+
+	ev = replay->current;
+	if (!ev)
 		return (0);
-	if (apply_event(replay, replay->current) == -1)
+	if (apply_event(replay, ev) == -1)
 		return (-1);
-	replay->ms_saved = replay->current->ms;
-	replay->current = replay->current->next;
+	// during playback the clock is driven by the elapsed real time: resyncing
+	// it on the event timestamp would drop the current frame remainder
+	if (sync_clock)
+		replay->ms_saved = ev->ms;
+	replay->current = ev->next;
 	return (1);
 }
 
@@ -124,7 +130,8 @@ static int step_backward(t_replay *replay) {
 	if (undo_event(replay, ev) == -1)
 		return (-1);
 	replay->current = ev;
-	replay->ms_saved = ev->ms;
+	// the board now shows the state left by the previous event
+	replay->ms_saved = (ev->prev) ? ev->prev->ms : 0;
 	return (1);
 }
 
@@ -133,8 +140,10 @@ int replay_play(t_replay *replay) {
 	int		ch;
 	int		b;
 
-	if (display_init_replay(replay) == -1)
+	if (display_init_replay(replay) == -1) {
+		ft_printf("lemipc: error: display init failed (terminal too small?)\n");
 		return (-1);
+	}
 
 	replay->playing = false;
 	last_tick = now_ms();
@@ -150,7 +159,7 @@ int replay_play(t_replay *replay) {
 		if (ch == ' ') {
 			replay->playing = !replay->playing;
 		} else if (ch == KEY_RIGHT && !replay->playing) {
-			b = step_forward(replay);
+			b = step_forward(replay, true);
 		} else if (ch == KEY_LEFT && !replay->playing) {
 			b = step_backward(replay);
 		}
@@ -165,7 +174,7 @@ int replay_play(t_replay *replay) {
 
 			// apply all events where ms <= ms_saved
 			while (replay->current && replay->current->ms <= replay->ms_saved) {
-				b = step_forward(replay);
+				b = step_forward(replay, false);
 				if (b == -1)
 					break;
 			}
@@ -184,7 +193,9 @@ int replay_play(t_replay *replay) {
 	}
 
 	display_destroy();
-	if (b == -1)
-		ft_printf("lemipc: error: illegal move\n");
+	if (b == -1) {
+		ft_printf("lemipc: error: unplayable event in replay\n");
+		return (-1);
+	}
 	return (0);
 }

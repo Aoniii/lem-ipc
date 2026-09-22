@@ -13,20 +13,16 @@
  * counts the current empty tiles, picks a random target index within that
  * range, and scans the board to claim exactly that $N$-th empty slot.
  */
-int player_place(t_data *data, t_pos *pos) {
+static int player_place(t_data *data, t_pos *pos) {
 	unsigned char	*board;
 	unsigned int	count;
 	unsigned int	rdm;
 	unsigned int	i;
 
-	sem_lock(data->sem_id);
-
 	// 1. Safety check: gather how many tiles are currently free
 	count = board_count(data, TILE_EMPTY);
-	if (count == 0) {
-		sem_unlock(data->sem_id);
+	if (count == 0)
 		return (-1);
-	}
 
 	board = board_get(data);
 	// Target the N-th empty tile safely
@@ -47,8 +43,6 @@ int player_place(t_data *data, t_pos *pos) {
 	board[i] = data->team;
 	pos->x = i % data->map_size;
 	pos->y = i / data->map_size;
-
-	sem_unlock(data->sem_id);
 	return (0);
 }
 
@@ -58,13 +52,20 @@ int player_place(t_data *data, t_pos *pos) {
  * Increments the global shared player counter and posts a joining log
  * broadcast.
  */
-void player_join(t_data *data, t_pos pos) {
+int player_join(t_data *data, t_pos *pos) {
 	sem_lock(data->sem_id);
-	log_push(data, "[+] Team %d joined at (%d, %d)", data->team, pos.x, pos.y);
-	verbose_log(data, "joined at (%d, %d)", pos.x, pos.y);
+	if (player_place(data, pos) == -1) {
+		sem_unlock(data->sem_id);
+		return (-1);
+	}
+
+	log_push(data, "[+] Team %d joined at (%d, %d)", data->team, pos->x,
+		pos->y);
+	verbose_log(data, "joined at (%d, %d)", pos->x, pos->y);
 	((t_shm_header *)data->shm_ptr)->player_count++;
-	replay_join(data, pos);
+	replay_join(data, *pos);
 	sem_unlock(data->sem_id);
+	return (0);
 }
 
 /**
@@ -73,11 +74,15 @@ void player_join(t_data *data, t_pos pos) {
  * Logs the exit status event. Note: global player_count decrement is safely
  * handled inside the centralized ipc_cleanup sequence.
  */
-void player_quit(t_data *data, t_pos pos) {
+void player_quit(t_data *data, t_pos pos, bool alive) {
 	sem_lock(data->sem_id);
+	if (alive) {
+		// Clear my tile
+		board_set_empty(data, pos);
+		replay_quit(data, pos);
+	}
 	log_push(data, "[-] Team %d left", data->team);
 	verbose_log(data, "left");
-	replay_quit(data, pos);
 	sem_unlock(data->sem_id);
 }
 

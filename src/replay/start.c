@@ -48,7 +48,6 @@ int replay_start(char *filename) {
 	close(fd);
 	if (replay_play(&replay) == -1) {
 		replay_free(&replay);
-		ft_printf("lemipc: error: unplayable event in replay\n");
 		return (-1);
 	}
 

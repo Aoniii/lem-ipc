@@ -1,4 +1,3 @@
-#include <locale.h>
 #include <ncurses.h>
 #include "display.h"
 #include "lem-ipc.h"
@@ -15,24 +14,15 @@ int display_init_replay(t_replay *replay) {
 	int needed_y;
 	int needed_x;
 
-	setlocale(LC_ALL, "");
-	initscr();
-	noecho();
-	curs_set(0);
-
-	if (has_colors() == FALSE) {
-		endwin();
+	if (curses_start() == -1)
 		return (-1);
-	}
 
-	start_color();
-	init_team_colors();
 	getmaxyx(stdscr, max_y, max_x);
 	needed_y = replay->map_size + 6;
 	needed_x = MAX_MAP_SIZE * 2 + 2;
 
 	if (max_y < needed_y || max_x < needed_x) {
-		endwin();
+		display_destroy();
 		return (-1);
 	}
 
